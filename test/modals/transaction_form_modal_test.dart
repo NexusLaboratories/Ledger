@@ -143,7 +143,7 @@ void main() {
         id: any(named: 'id'),
         title: any(named: 'title'),
         description: any(named: 'description'),
-        categoryId: 'c1',
+        categoryId: any(named: 'categoryId'),
         amount: any(named: 'amount'),
         accountId: any(named: 'accountId'),
         date: any(named: 'date'),

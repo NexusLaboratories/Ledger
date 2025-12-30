@@ -244,12 +244,12 @@ class _TutorialCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Card(
         elevation: 2,
-        shadowColor: data.color.withOpacity(0.1),
+        shadowColor: data.color.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
-            color: data.color.withOpacity(0.08),
+            color: data.color.withValues(alpha: 0.08),
           ),
           child: Padding(
             padding: const EdgeInsets.all(32.0),
@@ -260,7 +260,7 @@ class _TutorialCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: data.color.withOpacity(0.15),
+                    color: data.color.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(data.icon, size: 80, color: data.color),
@@ -298,7 +298,7 @@ class _TutorialCard extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: data.color.withOpacity(0.12),
+                    color: data.color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(

@@ -3,6 +3,7 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:ledger/services/transaction_service.dart';
 import 'package:ledger/models/transaction.dart' as model_transaction;
+import 'package:ledger/services/database/core_db_service.dart';
 import 'package:integration_test/integration_test.dart';
 
 void main() {
@@ -89,6 +90,10 @@ void main() {
       });
 
       await legacyDb.close();
+
+      // Tell DatabaseService to use the test DB path so migrations are
+      // performed on the legacy DB file we created above.
+      await DatabaseService().setDatabasePathForTest(dbPath);
 
       // Now use TransactionService which will trigger migration to latest version
       final service = TransactionService();
@@ -234,7 +239,9 @@ void main() {
 
       await db.close();
 
-      // Open with current version - should trigger all migrations
+      // Point DatabaseService at the test DB and open with current version -
+      // should trigger all migrations
+      await DatabaseService().setDatabasePathForTest(dbPath);
       final service = TransactionService();
       await service.createTransaction(
         title: 'Post-migration transaction',

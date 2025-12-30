@@ -402,6 +402,53 @@ class DatabaseService implements AbstractDatabaseService {
       // Ensure database is initialized first
       await init();
 
+      // If running under Flutter's test environment, prefer the FFI database
+      // factory to avoid platform plugin missing issues (e.g., on CI or dart VM).
+      if (Platform.environment['FLUTTER_TEST'] == 'true') {
+        LoggerService.i(
+          'Running in test environment - using FFI database factory',
+        );
+        try {
+          ffi.sqfliteFfiInit();
+          final factory = ffi.databaseFactoryFfi;
+          _db = await factory.openDatabase(
+            _dbPath,
+            options: ffi.OpenDatabaseOptions(
+              version: 3,
+              onCreate: (db, version) async {
+                for (final script in _tableCreationScripts) {
+                  await db.execute(script);
+                }
+              },
+              onOpen: (db) async {
+                await _ensureTransactionColumnsForDb(db);
+                await _ensureAccountCurrencyColumnForDb(db);
+                await _ensureTagColorColumnForDb(db);
+                await _ensureBudgetsTableForDb(db);
+              },
+              onUpgrade: (db, oldVersion, newVersion) async {
+                LoggerService.i(
+                  'Database migration (FFI): v$oldVersion -> v$newVersion',
+                );
+                if (oldVersion < 2 && newVersion >= 2) {
+                  await _ensureTransactionColumnsForDb(db);
+                }
+                await _ensureAccountCurrencyColumnForDb(db);
+                await _ensureTagColorColumnForDb(db);
+                if (oldVersion < 3 && newVersion >= 3) {
+                  await _ensureBudgetsTableForDb(db);
+                }
+              },
+            ),
+          );
+
+          return _db!;
+        } catch (e) {
+          LoggerService.e('FFI test database open failed', e);
+          // Continue to try the normal plugin-based open path as a fallback.
+        }
+      }
+
       _db = await openDatabase(
         _dbPath,
         password: _password,
@@ -511,6 +558,12 @@ class DatabaseService implements AbstractDatabaseService {
   @visibleForTesting
   void setDatabaseForTest(Database db) {
     _db = db;
+    _initialized = true;
+  }
+
+  @visibleForTesting
+  Future<void> setDatabasePathForTest(String path) async {
+    _dbPath = path;
     _initialized = true;
   }
 

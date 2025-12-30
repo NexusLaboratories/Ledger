@@ -217,12 +217,12 @@ void main() {
     // Tap the card's center rather than the inner Text widget to avoid hit test issues
     final centerTap = tester.getCenter(cardFinder);
     await tester.tapAt(centerTap);
-    // Use pump instead of pumpAndSettle to avoid timeout from RefreshIndicator animation
+    // Use bounded pumps to wait for navigation and async work without
+    // blocking on animations (e.g., RefreshIndicator). A fixed short wait
+    // is sufficient for these synchronous fake services.
     await tester.pump();
-    // Wait for navigation and Future to complete
     await tester.pump();
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(seconds: 1));
 
     // Should navigate to details and show spent total: 17.5 (10 + 5 + 2.5)
     expect(find.byType(CategoryDetailScreen), findsOneWidget);
@@ -407,12 +407,12 @@ void main() {
         ),
       ),
     );
-    // Use pump instead of pumpAndSettle to avoid timeout from RefreshIndicator animation
+    // Use bounded pumps to allow FutureBuilder to complete without
+    // waiting for indeterminate animations to settle.
     await tester.pump();
-    // Wait for FutureBuilder to complete (multiple pumps to allow rebuild)
     await tester.pump();
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(seconds: 1));
+
     // debug info for testing diagnostics
     // ignore: avoid_print
     print(

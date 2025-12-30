@@ -3,6 +3,7 @@ import 'package:ledger/models/category.dart';
 import 'package:ledger/models/category_summary.dart';
 import 'package:ledger/services/account_service.dart';
 import 'package:ledger/services/category_service.dart';
+import 'package:ledger/services/logger_service.dart';
 import 'package:ledger/models/category_node.dart';
 import 'package:ledger/components/categories/category_card.dart';
 import 'package:ledger/services/transaction_service.dart';
@@ -83,10 +84,19 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   }
 
   Future<void> _loadData() async {
+    LoggerService.i('CategoryDetail: loading categories');
     final allCats = await _categoryService.fetchCategoriesForUser('local');
+    LoggerService.i('CategoryDetail: fetched ${allCats.length} categories');
+
     final allSummaries = await _categoryService.getCategorySummaries('local');
+    LoggerService.i('CategoryDetail: fetched ${allSummaries.length} summaries');
+
     final txs = await _transactionService.getAllTransactions();
+    LoggerService.i('CategoryDetail: fetched ${txs.length} transactions');
+
     final accounts = await _accountService.fetchAccounts();
+    LoggerService.i('CategoryDetail: fetched ${accounts.length} accounts');
+
     _accountNames = {
       for (final acc in accounts)
         if (acc != null) acc.id: acc.name,

@@ -24,8 +24,8 @@ void main() {
     expect(find.text('Testing'), findsOneWidget);
     final formattedAmount = CurrencyFormatter.format(1.0, 'USD');
     expect(find.text(formattedAmount), findsOneWidget);
-    // Description is null - there should be 4 Text widgets (avatar initial + name + currency + balance)
-    expect(find.byType(Text), findsNWidgets(4));
+    // Description is null - there should be 3 Text widgets (name + currency + balance)
+    expect(find.byType(Text), findsNWidgets(3));
   });
 
   testWidgets('AccountCard shows description when non-empty', (
@@ -51,8 +51,8 @@ void main() {
     final formattedAmount = CurrencyFormatter.format(1.0, 'USD');
     expect(find.text(formattedAmount), findsOneWidget);
     expect(find.text('Main account'), findsOneWidget);
-    // avatar initial + name + description + currency + balance
-    expect(find.byType(Text), findsNWidgets(5));
+    // avatar icon + name + description + currency + balance => 4 Text widgets
+    expect(find.byType(Text), findsNWidgets(4));
   });
 
   testWidgets('AccountCard hides description when empty string', (
@@ -73,8 +73,8 @@ void main() {
     expect(find.text('Testing'), findsOneWidget);
     final formattedAmount = CurrencyFormatter.format(1.0, 'USD');
     expect(find.text(formattedAmount), findsOneWidget);
-    // Empty string should not show a description; avatar initial + name + currency + balance
-    expect(find.byType(Text), findsNWidgets(4));
+    // Empty string should not show a description; name + currency + balance => 3 Text widgets
+    expect(find.byType(Text), findsNWidgets(3));
   });
 
   testWidgets('AccountCard long-press menu calls onEdit', (

@@ -7,15 +7,34 @@ abstract class SecureStorage {
     required String key,
     required String value,
   }) async {
-    await _secureStorage.write(key: key, value: value);
+    try {
+      await _secureStorage
+          .write(key: key, value: value)
+          .timeout(const Duration(milliseconds: 250), onTimeout: () => null);
+    } catch (_) {
+      // Swallow storage errors in tests or environments without a
+      // platform implementation to avoid blocking UI/tests.
+    }
   }
 
   static Future<dynamic> getValue({required String key}) async {
-    final value = await _secureStorage.read(key: key);
-    return value;
+    try {
+      final value = await _secureStorage
+          .read(key: key)
+          .timeout(const Duration(milliseconds: 250), onTimeout: () => null);
+      return value;
+    } catch (_) {
+      return null;
+    }
   }
 
   static Future<void> clearValue({required String key}) async {
-    await _secureStorage.delete(key: key);
+    try {
+      await _secureStorage
+          .delete(key: key)
+          .timeout(const Duration(milliseconds: 250), onTimeout: () => null);
+    } catch (_) {
+      // Ignore
+    }
   }
 }

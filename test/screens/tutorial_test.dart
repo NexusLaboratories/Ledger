@@ -9,6 +9,16 @@ void main() {
   testWidgets('Settings -> Start tutorial navigates to TutorialScreen', (
     tester,
   ) async {
+    // Use a larger surface size to avoid layout overflows in CI
+    tester.view.physicalSize = const Size(1200, 1500);
+    tester.view.devicePixelRatio = 1.0;
+
+    addTearDown(() {
+      // Restore default test window size
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
     await tester.pumpWidget(
       MaterialApp(
         theme: lightTheme,
