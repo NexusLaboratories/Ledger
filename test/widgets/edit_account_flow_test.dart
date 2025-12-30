@@ -31,7 +31,8 @@ void main() {
       );
 
       when(
-        () => mockService.fetchAccounts(),
+        () =>
+            mockService.fetchAccounts(forceRefetch: any(named: 'forceRefetch')),
       ).thenAnswer((_) async => [sampleAccount]);
       when(() => mockService.updateAccount(any())).thenAnswer((_) async {});
       when(() => mockService.deleteAccount(any())).thenAnswer((_) async {});

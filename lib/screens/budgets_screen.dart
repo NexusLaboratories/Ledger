@@ -5,6 +5,7 @@ import 'package:ledger/components/ui/layout/custom_app_drawer.dart';
 import 'package:ledger/components/ui/buttons/custom_floating_action_button.dart';
 import 'package:ledger/modals/budget_form_modal.dart';
 import 'package:ledger/services/budget_service.dart';
+import 'package:ledger/services/data_refresh_service.dart';
 
 class BudgetsScreen extends StatefulWidget {
   final AbstractBudgetService? budgetService;
@@ -23,7 +24,24 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
   void initState() {
     super.initState();
     _budgetService = widget.budgetService ?? BudgetService();
+    DataRefreshService().budgetsNotifier.addListener(_onBudgetsChanged);
+    DataRefreshService().transactionsNotifier.addListener(_onBudgetsChanged);
     _loadFuture = _load();
+  }
+
+  @override
+  void dispose() {
+    DataRefreshService().budgetsNotifier.removeListener(_onBudgetsChanged);
+    DataRefreshService().transactionsNotifier.removeListener(_onBudgetsChanged);
+    super.dispose();
+  }
+
+  void _onBudgetsChanged() {
+    if (mounted) {
+      setState(() {
+        _loadFuture = _load();
+      });
+    }
   }
 
   Future<List<dynamic>> _load() async {

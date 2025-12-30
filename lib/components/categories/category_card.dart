@@ -154,17 +154,18 @@ class CategoryCard extends StatelessWidget {
                           (summary) => Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text(
-                                CurrencyFormatter.format(
-                                  summary.incomeAmount,
-                                  summary.currency,
+                              if (summary.incomeAmount > 0)
+                                Text(
+                                  CurrencyFormatter.format(
+                                    summary.incomeAmount,
+                                    summary.currency,
+                                  ),
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: CustomColors.positive,
+                                      ),
                                 ),
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: CustomColors.positive,
-                                    ),
-                              ),
                               Text(
                                 CurrencyFormatter.format(
                                   summary.expenseAmount,

@@ -437,4 +437,23 @@ class UserPreferenceService {
       return false;
     }
   }
+
+  // FAB direct action - whether FAB should directly add transaction (true) or show menu (false)
+  static const String _fabDirectActionKey = 'fab_direct_action';
+
+  static Future<void> setFabDirectAction({required bool value}) async {
+    await SecureStorage.setValue(
+      key: _fabDirectActionKey,
+      value: value.toString(),
+    );
+  }
+
+  static Future<bool> getFabDirectAction() async {
+    try {
+      final value = await SecureStorage.getValue(key: _fabDirectActionKey);
+      return value == 'true';
+    } catch (_) {
+      return false; // Default to showing menu
+    }
+  }
 }

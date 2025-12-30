@@ -7,6 +7,7 @@ import 'package:ledger/modals/account_form_modal.dart';
 import 'package:ledger/models/account.dart';
 import 'package:ledger/services/account_service.dart';
 import 'package:ledger/screens/account_transactions_screen.dart';
+import 'package:ledger/services/data_refresh_service.dart';
 
 class AccountsScreen extends StatefulWidget {
   final AbstractAccountService? accountService;
@@ -18,12 +19,29 @@ class AccountsScreen extends StatefulWidget {
 
 class _AccountsScreenState extends State<AccountsScreen> {
   late final AbstractAccountService _accountService;
-  // No per-card active state needed; we use long-press modal for edit/delete.
+  int _refreshKey = 0;
 
   @override
   void initState() {
     super.initState();
     _accountService = widget.accountService ?? AccountService();
+
+    // Listen to accounts changes
+    DataRefreshService().accountsNotifier.addListener(_onAccountsChanged);
+  }
+
+  @override
+  void dispose() {
+    DataRefreshService().accountsNotifier.removeListener(_onAccountsChanged);
+    super.dispose();
+  }
+
+  void _onAccountsChanged() {
+    if (mounted) {
+      setState(() {
+        _refreshKey++;
+      });
+    }
   }
 
   void _showCreateAccountModal() {
@@ -65,7 +83,8 @@ class _AccountsScreenState extends State<AccountsScreen> {
         onPressed: _showCreateAccountModal,
       ),
       body: FutureBuilder(
-        future: _accountService.fetchAccounts(),
+        key: ValueKey(_refreshKey),
+        future: _accountService.fetchAccounts(forceRefetch: true),
         builder:
             (BuildContext context, AsyncSnapshot<List<Account?>> snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {

@@ -69,8 +69,8 @@ class Transaction {
   Transaction copyWith({
     String? id,
     String? title,
-    String? description,
-    String? categoryId,
+    Object? description = const _Undefined(),
+    Object? categoryId = const _Undefined(),
     List<String>? tagIds,
     List<String>? tagNames,
     double? amount,
@@ -81,8 +81,12 @@ class Transaction {
     return Transaction(
       id: id ?? this.id,
       title: title ?? this.title,
-      description: description ?? this.description,
-      categoryId: categoryId ?? this.categoryId,
+      description: description is _Undefined
+          ? this.description
+          : description as String?,
+      categoryId: categoryId is _Undefined
+          ? this.categoryId
+          : categoryId as String?,
       tagIds: tagIds ?? this.tagIds,
       tagNames: tagNames ?? this.tagNames,
       amount: amount ?? this.amount,
@@ -91,4 +95,9 @@ class Transaction {
       type: type ?? this.type,
     );
   }
+}
+
+// Helper class to distinguish between null and not provided
+class _Undefined {
+  const _Undefined();
 }

@@ -54,6 +54,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _aiEndpoint = '';
   String _aiApiKey = '';
   String _aiModel = '';
+  bool _fabDirectAction = false;
 
   @override
   Widget build(BuildContext context) {
@@ -149,13 +150,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
             SectionHeader.settings(title: SettingsConstants.preferencesSection),
             const SizedBox(height: SettingsConstants.cardSpacing),
             SettingsCard(
-              child: PreferencesSettingsSection(
-                defaultCurrency: _defaultCurrency,
-                dateFormatKey: _dateFormatKey,
-                onCurrencyChanged: (value) =>
-                    setState(() => _defaultCurrency = value),
-                onDateFormatChanged: (value) =>
-                    setState(() => _dateFormatKey = value),
+              child: Column(
+                children: [
+                  PreferencesSettingsSection(
+                    defaultCurrency: _defaultCurrency,
+                    dateFormatKey: _dateFormatKey,
+                    onCurrencyChanged: (value) =>
+                        setState(() => _defaultCurrency = value),
+                    onDateFormatChanged: (value) =>
+                        setState(() => _dateFormatKey = value),
+                  ),
+                  const Divider(),
+                  SwitchListTile(
+                    title: const Text('Quick Add Transaction'),
+                    subtitle: const Text('Tap FAB to directly add transaction'),
+                    value: _fabDirectAction,
+                    onChanged: (value) async {
+                      setState(() => _fabDirectAction = value);
+                      await UserPreferenceService.setFabDirectAction(
+                        value: value,
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: SettingsConstants.sectionSpacing),
@@ -228,6 +245,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       UserPreferenceService.getAiEndpoint(),
       UserPreferenceService.getAiApiKey(),
       UserPreferenceService.getAiModel(),
+      UserPreferenceService.getFabDirectAction(),
     ]);
 
     final matchTheme = results[0] as bool;
@@ -248,6 +266,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final aiEndpoint = results[15] as String;
     final aiApiKey = results[16] as String;
     final aiModel = results[17] as String;
+    final fabDirectAction = results[18] as bool;
     final biometricTypeDesc = BiometricService.getBiometricTypeDescription(
       availableBiometrics,
     );
@@ -271,6 +290,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _aiEndpoint = aiEndpoint;
       _aiApiKey = aiApiKey;
       _aiModel = aiModel;
+      _fabDirectAction = fabDirectAction;
     });
     _applyTheme();
   }

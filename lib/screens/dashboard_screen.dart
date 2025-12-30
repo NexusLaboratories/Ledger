@@ -10,6 +10,8 @@ import 'package:ledger/components/ui/common/glass_container.dart';
 import 'package:ledger/constants/dashboard_constants.dart';
 import 'package:ledger/modals/account_form_modal.dart';
 import 'package:ledger/modals/transaction_form_modal.dart';
+import 'package:ledger/modals/budget_form_modal.dart';
+import 'package:ledger/modals/category_form_modal.dart';
 import 'package:ledger/models/account.dart';
 import 'package:ledger/models/dashboard_widget.dart';
 import 'package:ledger/models/search_filter.dart';
@@ -27,6 +29,7 @@ import 'package:ledger/presets/date_formats.dart';
 import 'package:ledger/utilities/date_formatter.dart';
 import 'package:ledger/services/date_format_service.dart';
 import 'package:ledger/components/transactions/transaction_list_item.dart';
+import 'package:ledger/services/data_refresh_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   final AbstractAccountService? accountService;
@@ -51,6 +54,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _isLoadingWidgets = true;
   Map<String, bool> _widgetVisibility = {};
   String _dateFormatKey = DateFormats.defaultKey;
+  int _refreshKey = 0;
 
   Future<void> _loadDateFormat() async {
     final k = await UserPreferenceService.getDateFormat();
@@ -66,7 +70,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void dispose() {
     DateFormatService.notifier.removeListener(_onDateFormatChanged);
+    DataRefreshService().accountsNotifier.removeListener(_onDataChanged);
+    DataRefreshService().transactionsNotifier.removeListener(_onDataChanged);
+    DataRefreshService().budgetsNotifier.removeListener(_onDataChanged);
     super.dispose();
+  }
+
+  void _onDataChanged() {
+    if (mounted) {
+      setState(() {
+        _refreshKey++;
+      });
+    }
   }
 
   // Search state
@@ -424,66 +439,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _searchService = SearchService();
     _loadDateFormat();
     DateFormatService.notifier.addListener(_onDateFormatChanged);
+    DataRefreshService().accountsNotifier.addListener(_onDataChanged);
+    DataRefreshService().transactionsNotifier.addListener(_onDataChanged);
+    DataRefreshService().budgetsNotifier.addListener(_onDataChanged);
     _loadDashboardWidgets();
     fabMenu = [
       {
         'title': DashboardConstants.addTransactionTitle,
         'onTap': () async {
-          // Ensure at least one account exists before creating a transaction
-          final accounts = await _accountService.fetchAccounts();
-          if (!mounted) return; // prevent use of context after async gap
-          if (accounts.isEmpty) {
-            final createAccount = await showDialog<bool>(
-              context: context,
-              builder: (BuildContext dc) => CustomDialog(
-                title: DashboardConstants.noAccountsTitle,
-                content: DashboardConstants.noAccountsMessage,
-                actions: [
-                  CustomButton(
-                    text: DashboardConstants.cancelLabel,
-                    onPressed: () => Navigator.of(dc).pop(false),
-                  ),
-                  CustomButton(
-                    text: DashboardConstants.createAccountLabel,
-                    onPressed: () => Navigator.of(dc).pop(true),
-                  ),
-                ],
-              ),
-            );
-            if (createAccount == true) {
-              if (!mounted) return;
-              final accountData =
-                  await showModalBottomSheet<Map<String, String?>>(
-                    context: context,
-                    isScrollControlled: true,
-                    builder: (BuildContext bc) {
-                      return AccountFormModal(accountService: _accountService);
-                    },
-                  );
-              if (accountData == null) {
-                return; // user cancelled account creation
-              }
-              await _accountService.createAccount(
-                accountData['name']!,
-                accountData['description'],
-                currency: accountData['currency'],
-              );
-            } else {
-              return; // user cancelled No Accounts dialog
-            }
-          }
-
-          if (!mounted) return;
-          if (!mounted) return; // double safety
-          await showModalBottomSheet(
+          await _addTransaction();
+        },
+      },
+      {
+        'title': 'Create Budget',
+        'onTap': () async {
+          final result = await showModalBottomSheet<bool?>(
             context: context,
             isScrollControlled: true,
-            builder: (BuildContext context) {
-              return const TransactionFormModal();
-            },
+            builder: (context) => const BudgetFormModal(),
           );
-          if (!mounted) return;
-          setState(() {});
+          if (result == true && mounted) {
+            setState(() {});
+          }
+        },
+      },
+      {
+        'title': 'Create Category',
+        'onTap': () async {
+          final result = await showModalBottomSheet<bool?>(
+            context: context,
+            isScrollControlled: true,
+            builder: (context) => const CategoryFormModal(),
+          );
+          if (result == true && mounted) {
+            setState(() {});
+          }
         },
       },
       {
@@ -510,6 +500,66 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ];
   }
 
+  Future<void> _addTransaction() async {
+    // Ensure at least one account exists before creating a transaction
+    final accounts = await _accountService.fetchAccounts();
+    if (!mounted) return; // prevent use of context after async gap
+    if (accounts.isEmpty) {
+      final createAccount = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext dc) => CustomDialog(
+          title: DashboardConstants.noAccountsTitle,
+          content: DashboardConstants.noAccountsMessage,
+          actions: [
+            CustomButton(
+              text: DashboardConstants.cancelLabel,
+              onPressed: () => Navigator.of(dc).pop(false),
+            ),
+            CustomButton(
+              text: DashboardConstants.createAccountLabel,
+              onPressed: () => Navigator.of(dc).pop(true),
+            ),
+          ],
+        ),
+      );
+      if (createAccount == true) {
+        if (!mounted) return;
+        final accountData = await showModalBottomSheet<Map<String, String?>>(
+          context: context,
+          isScrollControlled: true,
+          builder: (BuildContext bc) {
+            return AccountFormModal(accountService: _accountService);
+          },
+        );
+        if (accountData == null) {
+          return; // user cancelled account creation
+        }
+        await _accountService.createAccount(
+          accountData['name']!,
+          accountData['description'],
+          currency: accountData['currency'],
+        );
+      } else {
+        return; // user cancelled No Accounts dialog
+      }
+    }
+
+    if (!mounted) return;
+    if (!mounted) return; // double safety
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return const TransactionFormModal();
+      },
+    );
+    if (result == true && mounted) {
+      setState(() {
+        _refreshKey++; // Increment refresh key to trigger dashboard reload
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -517,9 +567,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       appBar: const CustomAppBar(title: DashboardConstants.screenTitle),
       drawer: const CustomAppDrawer(),
-      floatingActionButton: CustomFloatingActionButton(
-        tooltip: DashboardConstants.addTooltip,
-        menuOptions: fabMenu,
+      floatingActionButton: FutureBuilder<bool>(
+        future: UserPreferenceService.getFabDirectAction(),
+        builder: (context, snapshot) {
+          final directAction = snapshot.data ?? false;
+          if (directAction) {
+            return CustomFloatingActionButton(
+              tooltip: DashboardConstants.addTransactionTitle,
+              onPressed: _addTransaction,
+            );
+          } else {
+            return CustomFloatingActionButton(
+              tooltip: DashboardConstants.addTooltip,
+              menuOptions: fabMenu,
+            );
+          }
+        },
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -552,6 +615,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 child: _dbService.isDBOpen
                     ? FutureBuilder(
+                        key: ValueKey(_refreshKey),
                         future: _accountService.fetchNetWorth(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==

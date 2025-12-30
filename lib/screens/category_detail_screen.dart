@@ -18,6 +18,7 @@ import 'package:ledger/presets/theme.dart';
 import 'package:ledger/modals/category_form_modal.dart';
 import 'package:ledger/constants/tag_icons.dart';
 import 'package:ledger/components/ui/common/glass_container.dart';
+import 'package:ledger/screens/transaction_detail_screen.dart';
 
 class CategoryDetailScreen extends StatefulWidget {
   final Category category;
@@ -573,6 +574,19 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                             transaction: t,
                             subtitle:
                                 '$accountName • ${DateFormatter.formatWithKeyOrPattern(t.date, _dateFormatKey)}',
+                            onTap: () async {
+                              final result = await Navigator.of(context)
+                                  .push<bool?>(
+                                    MaterialPageRoute(
+                                      builder: (_) => TransactionDetailScreen(
+                                        transaction: t,
+                                      ),
+                                    ),
+                                  );
+                              if (result == true && mounted) {
+                                await _loadData();
+                              }
+                            },
                           );
                         }).toList(),
                       ),

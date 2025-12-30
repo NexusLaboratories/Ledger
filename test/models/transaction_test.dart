@@ -57,5 +57,41 @@ void main() {
         expect(tx.title, equals('Untitled Transaction'));
       },
     );
+
+    test('copyWith can set categoryId to null', () {
+      final tx = Transaction(
+        title: 'Groceries',
+        categoryId: 'cat123',
+        amount: 50.0,
+        accountId: 'acc1',
+        date: DateTime.now(),
+        type: TransactionType.expense,
+      );
+
+      expect(tx.categoryId, equals('cat123'));
+
+      // This should actually set categoryId to null, not keep the old value
+      final updated = tx.copyWith(categoryId: null);
+
+      expect(updated.categoryId, isNull);
+    });
+
+    test('copyWith can set description to null', () {
+      final tx = Transaction(
+        title: 'Test',
+        description: 'Some description',
+        amount: 100.0,
+        accountId: 'acc1',
+        date: DateTime.now(),
+        type: TransactionType.income,
+      );
+
+      expect(tx.description, equals('Some description'));
+
+      // This should actually set description to null, not keep the old value
+      final updated = tx.copyWith(description: null);
+
+      expect(updated.description, isNull);
+    });
   });
 }

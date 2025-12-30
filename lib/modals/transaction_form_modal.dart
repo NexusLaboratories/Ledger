@@ -182,6 +182,7 @@ class _TransactionFormModalState extends State<TransactionFormModal> {
         id: Utilities.generateUuid(),
         userId: 'local',
         name: tagName.trim(),
+        color: 0xFF2E7D32, // Default green color
       );
       await _tagService.createTag(newTag);
       LoggerService.i('Tag created successfully: ${newTag.id}');
@@ -337,7 +338,7 @@ class _TransactionFormModalState extends State<TransactionFormModal> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Transaction created successfully')),
           );
-          Navigator.pop(context);
+          Navigator.pop(context, true);
         }
       } else {
         // Update existing transaction
@@ -366,7 +367,7 @@ class _TransactionFormModalState extends State<TransactionFormModal> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Transaction updated successfully')),
           );
-          Navigator.pop(context);
+          Navigator.pop(context, true);
         }
       }
     } catch (e, stackTrace) {
@@ -858,7 +859,7 @@ class _TransactionFormModalState extends State<TransactionFormModal> {
                     ),
                     child: DropdownButtonFormField<String?>(
                       key: const Key('transaction-category-dropdown'),
-                      initialValue: _selectedCategoryId,
+                      value: _selectedCategoryId,
                       items: [
                         const DropdownMenuItem<String?>(
                           value: null,

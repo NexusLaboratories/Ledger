@@ -6,6 +6,7 @@ import 'package:ledger/models/transaction_tag.dart' as model_transaction_tag;
 import 'package:ledger/services/database/transaction_db_service.dart';
 import 'package:ledger/services/logger_service.dart';
 import 'package:ledger/utilities/singleton_service_mixin.dart';
+import 'package:ledger/services/data_refresh_service.dart';
 
 abstract class AbstractTransactionService {
   Future<List<Transaction>> getTransactionsForAccount(String accountId);
@@ -120,6 +121,9 @@ class TransactionService implements AbstractTransactionService {
       // Update account balance
       await _balanceService.applyTransactionToBalance(newTransaction);
 
+      DataRefreshService().notifyTransactionsChanged();
+      DataRefreshService().notifyAccountsChanged();
+
       LoggerService.i(
         'Transaction created successfully: ${newTransaction.id} | Tags: ${tagIds?.length ?? 0}',
       );
@@ -147,6 +151,8 @@ class TransactionService implements AbstractTransactionService {
 
         // Update account balance
         await _balanceService.revertTransactionFromBalance(transaction);
+        DataRefreshService().notifyTransactionsChanged();
+        DataRefreshService().notifyAccountsChanged();
         LoggerService.i(
           'Transaction deleted and balance updated: $transactionId',
         );
@@ -296,5 +302,8 @@ class TransactionService implements AbstractTransactionService {
         );
       }
     }
+
+    DataRefreshService().notifyTransactionsChanged();
+    DataRefreshService().notifyAccountsChanged();
   }
 }

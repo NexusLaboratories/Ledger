@@ -6,6 +6,7 @@ import 'package:ledger/services/transaction_service.dart';
 import 'package:ledger/services/user_preference_service.dart';
 import 'package:ledger/utilities/currency_formatter.dart';
 import 'package:ledger/services/date_format_service.dart';
+import 'package:ledger/services/data_refresh_service.dart';
 import 'package:ledger/components/ui/common/glass_container.dart';
 import 'package:ledger/components/activities/activity_item.dart';
 
@@ -42,12 +43,22 @@ class _RecentActivitiesWidgetState extends State<RecentActivitiesWidget> {
     super.initState();
     _loadDateFormat();
     DateFormatService.notifier.addListener(_onDateFormatChanged);
+    DataRefreshService().transactionsNotifier.addListener(_onDataChanged);
+    DataRefreshService().accountsNotifier.addListener(_onDataChanged);
     _loadData();
+  }
+
+  void _onDataChanged() {
+    if (mounted) {
+      _loadData();
+    }
   }
 
   @override
   void dispose() {
     DateFormatService.notifier.removeListener(_onDateFormatChanged);
+    DataRefreshService().transactionsNotifier.removeListener(_onDataChanged);
+    DataRefreshService().accountsNotifier.removeListener(_onDataChanged);
     super.dispose();
   }
 

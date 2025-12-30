@@ -3,6 +3,7 @@ import 'package:ledger/services/database/account_db_service.dart';
 import 'package:ledger/services/user_preference_service.dart';
 import 'package:ledger/utilities/singleton_service_mixin.dart';
 import 'package:ledger/services/logger_service.dart';
+import 'package:ledger/services/data_refresh_service.dart';
 
 abstract class AbstractAccountService {
   Future<double> fetchNetWorth({String? inCurrency});
@@ -74,6 +75,7 @@ class AccountService implements AbstractAccountService {
       _accounts.add(newAccount);
 
       await _accountDBService.createAccount(newAccount);
+      DataRefreshService().notifyAccountsChanged();
       LoggerService.i('Account created successfully: ${newAccount.id}');
     } catch (e, stackTrace) {
       LoggerService.e(
@@ -157,6 +159,7 @@ class AccountService implements AbstractAccountService {
       if (index != -1) {
         _accounts[index] = account;
       }
+      DataRefreshService().notifyAccountsChanged();
     } catch (e, stackTrace) {
       LoggerService.e('Failed to update account: ${account.id}', e, stackTrace);
       rethrow;
@@ -168,6 +171,7 @@ class AccountService implements AbstractAccountService {
     try {
       await _accountDBService.delete(accountId);
       _accounts.removeWhere((account) => account!.id == accountId);
+      DataRefreshService().notifyAccountsChanged();
     } catch (e, stackTrace) {
       LoggerService.e('Failed to delete account: $accountId', e, stackTrace);
       rethrow;

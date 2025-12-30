@@ -18,6 +18,7 @@ import 'package:ledger/presets/theme.dart';
 import 'package:ledger/constants/tag_icons.dart';
 import 'package:ledger/utilities/currency_formatter.dart';
 import 'package:ledger/components/ui/common/glass_container.dart';
+import 'package:ledger/services/data_refresh_service.dart';
 
 class AccountTransactionsScreen extends StatefulWidget {
   final Account account;
@@ -53,17 +54,33 @@ class _AccountTransactionsScreenState extends State<AccountTransactionsScreen> {
     }
   }
 
+  void _onTransactionsChanged() {
+    if (mounted) {
+      _refresh();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _fetchTransactions();
     _loadDateFormat();
     DateFormatService.notifier.addListener(_onDateFormatChanged);
+    DataRefreshService().transactionsNotifier.addListener(
+      _onTransactionsChanged,
+    );
+    DataRefreshService().accountsNotifier.addListener(_onTransactionsChanged);
   }
 
   @override
   void dispose() {
     DateFormatService.notifier.removeListener(_onDateFormatChanged);
+    DataRefreshService().transactionsNotifier.removeListener(
+      _onTransactionsChanged,
+    );
+    DataRefreshService().accountsNotifier.removeListener(
+      _onTransactionsChanged,
+    );
     super.dispose();
   }
 

@@ -129,7 +129,6 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
-                  Icon(Icons.chevron_right, color: Colors.grey.shade600),
                 ],
               ),
             ),
@@ -193,7 +192,7 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 24),
         ],
       ),
     );

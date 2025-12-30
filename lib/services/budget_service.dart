@@ -4,6 +4,7 @@ import 'package:ledger/services/transaction_service.dart';
 import 'package:ledger/models/transaction.dart' as model_tx;
 import 'package:ledger/services/logger_service.dart';
 import 'package:ledger/utilities/singleton_service_mixin.dart';
+import 'package:ledger/services/data_refresh_service.dart';
 
 class BudgetProgress {
   final Budget budget;
@@ -54,6 +55,7 @@ class BudgetService implements AbstractBudgetService {
   Future<void> createBudget(Budget budget) async {
     try {
       await _dbService.createBudget(budget);
+      DataRefreshService().notifyBudgetsChanged();
     } catch (e) {
       LoggerService.e('Failed to create budget', e);
       rethrow;
@@ -63,6 +65,7 @@ class BudgetService implements AbstractBudgetService {
   @override
   Future<void> deleteBudget(String budgetId) async {
     await _dbService.delete(budgetId);
+    DataRefreshService().notifyBudgetsChanged();
   }
 
   @override
@@ -81,6 +84,7 @@ class BudgetService implements AbstractBudgetService {
   @override
   Future<void> updateBudget(Budget budget) async {
     await _dbService.updateBudget(budget);
+    DataRefreshService().notifyBudgetsChanged();
   }
 
   @override

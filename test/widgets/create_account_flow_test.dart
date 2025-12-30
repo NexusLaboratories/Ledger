@@ -19,7 +19,10 @@ void main() {
     });
     setUp(() {
       mockService = MockAccountService();
-      when(() => mockService.fetchAccounts()).thenAnswer((_) async => []);
+      when(
+        () =>
+            mockService.fetchAccounts(forceRefetch: any(named: 'forceRefetch')),
+      ).thenAnswer((_) async => []);
       when(
         () => mockService.createAccount(
           any(),

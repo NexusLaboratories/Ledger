@@ -105,12 +105,16 @@ class _BudgetProgressWidgetState extends State<BudgetProgressWidget> {
     final percent = p.percent.clamp(0.0, 100.0);
     final Color progressColor;
     if (percent >= 100) {
-      progressColor = const Color(0xFFB71C1C);
+      // Rustic deep red for budgets that are over 100%
+      progressColor = const Color(0xFF7A2F1D);
     } else if (percent >= 90) {
-      progressColor = const Color(0xFFFF6F00);
+      // Strong red for 90-99%
+      progressColor = const Color(0xFFE53935);
     } else if (percent >= 80) {
-      progressColor = const Color(0xFFFDD835);
+      // Orange for 80-89%
+      progressColor = const Color(0xFFFF6F00);
     } else {
+      // Green for healthy budgets
       progressColor = const Color(0xFF43A047);
     }
 

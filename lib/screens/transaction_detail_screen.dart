@@ -79,6 +79,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
 
   late model_transaction.Transaction _transaction;
   bool _hasUnsavedChanges = false;
+  bool _hasChanges = false; // Track if transaction was edited
 
   void _confirmDelete() async {
     final confirmed = await showDialog<bool>(
@@ -162,6 +163,8 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
         await _loadCategory();
       }
       await _loadItems();
+      // Mark that data has changed so parent screens can refresh
+      _hasChanges = true;
     } else if (action == 'delete') {
       _confirmDelete();
     }
@@ -426,428 +429,412 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop && _hasChanges) {
+          // Return true to parent to signal refresh needed
+          // Note: can't change result here, so we handle in parent's onTap
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
-      appBar: AppBar(
-        title: const Text('Transaction'),
+        appBar: AppBar(
+          title: const Text('Transaction'),
 
-        elevation: 0,
+          elevation: 0,
 
-        backgroundColor: Colors.transparent,
-
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-
-            tooltip: 'More',
-
-            onPressed: _showTransactionActions,
+          backgroundColor: Colors.transparent,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop(_hasChanges),
           ),
-        ],
-      ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.more_vert),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+              tooltip: 'More',
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-
-          children: [
-            // Hero Transaction Card
-            TransactionHeroCard(
-              transaction: t,
-              currency: _currency,
-              onLongPress: _showTransactionActions,
-              dateFormatKey: _dateFormatKey,
+              onPressed: _showTransactionActions,
             ),
+          ],
+        ),
 
-            const SizedBox(height: 24),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(20.0),
 
-            // Warning for zero amount
-            if (_transaction.amount == 0)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: InfoCard.banner(
-                  message:
-                      'Transaction amount is 0 — edit the transaction amount to add items.',
-                  variant: InfoCardVariant.warning,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+
+            children: [
+              // Hero Transaction Card
+              TransactionHeroCard(
+                transaction: t,
+                currency: _currency,
+                onLongPress: _showTransactionActions,
+                dateFormatKey: _dateFormatKey,
+              ),
+
+              const SizedBox(height: 24),
+
+              // Warning for zero amount
+              if (_transaction.amount == 0)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: InfoCard.banner(
+                    message:
+                        'Transaction amount is 0 — edit the transaction amount to add items.',
+                    variant: InfoCardVariant.warning,
+                  ),
+                ),
+
+              // Details Section
+              Text(
+                'DETAILS',
+
+                style: TextStyle(
+                  fontSize: 12,
+
+                  fontWeight: FontWeight.w700,
+
+                  letterSpacing: 1.5,
+
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
 
-            // Details Section
-            Text(
-              'DETAILS',
+              const SizedBox(height: 12),
 
-              style: TextStyle(
-                fontSize: 12,
+              GlassContainer(
+                padding: const EdgeInsets.all(0),
+                borderRadius: BorderRadius.circular(16),
+                color: Theme.of(context).colorScheme.surface,
+                child: Container(
+                  width: double.infinity,
 
-                fontWeight: FontWeight.w700,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
 
-                letterSpacing: 1.5,
+                    borderRadius: BorderRadius.circular(16),
 
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(0, 0, 0, 0.05),
 
-            const SizedBox(height: 12),
+                        blurRadius: 10,
 
-            GlassContainer(
-              padding: const EdgeInsets.all(0),
-              borderRadius: BorderRadius.circular(16),
-              color: Theme.of(context).colorScheme.surface,
-              child: Container(
-                width: double.infinity,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
 
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
 
-                  borderRadius: BorderRadius.circular(16),
+                    child: Column(
+                      children: [
+                        TransactionDetailRow(
+                          icon: Icons.category_rounded,
+                          label: 'Category',
+                          value: _categoryName ?? 'None',
+                        ),
 
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color.fromRGBO(0, 0, 0, 0.05),
+                        const Divider(height: 24),
 
-                      blurRadius: 10,
-
-                      offset: Offset(0, 4),
+                        // Tags (always visible; show "None" when no tags)
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            IconContainer(
+                              icon: Icons.tag_rounded,
+                              size: IconContainerSize.medium,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Tags',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  TagChipDisplay(tagNames: _tagNames),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
+              ),
 
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
+              const SizedBox(height: 32),
 
-                  child: Column(
-                    children: [
-                      TransactionDetailRow(
-                        icon: Icons.category_rounded,
-                        label: 'Category',
-                        value: _categoryName ?? 'None',
+              // Items Section Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+
+                crossAxisAlignment: CrossAxisAlignment.end,
+
+                children: [
+                  Text(
+                    'ITEMS',
+
+                    style: TextStyle(
+                      fontSize: 12,
+
+                      fontWeight: FontWeight.w700,
+
+                      letterSpacing: 1.5,
+
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              // Items List
+              _loadingItems
+                  ? Container(
+                      padding: const EdgeInsets.all(40),
+
+                      alignment: Alignment.center,
+
+                      child: const CircularProgressIndicator(),
+                    )
+                  : _editedItems.isEmpty
+                  ? Container(
+                      width: double.infinity,
+
+                      padding: const EdgeInsets.all(32),
+
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+
+                        borderRadius: BorderRadius.circular(16),
+
+                        border: Border.all(
+                          color: isDark
+                              ? Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHighest
+                              : Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHighest,
+                        ),
                       ),
 
-                      const Divider(height: 24),
-
-                      // Tags (always visible; show "None" when no tags)
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Column(
                         children: [
-                          IconContainer(
-                            icon: Icons.tag_rounded,
-                            size: IconContainerSize.medium,
+                          Icon(
+                            Icons.receipt_long_outlined,
+
+                            size: 48,
+
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Tags',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                TagChipDisplay(tagNames: _tagNames),
-                              ],
+
+                          const SizedBox(height: 12),
+
+                          Text(
+                            'No items found.',
+
+                            style: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+
+                              fontSize: 15,
                             ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+                    )
+                  : Column(
+                      children: _editedItems.map((item) {
+                        final isOthers = item.id.startsWith(
+                          _othersSyntheticIdPrefix,
+                        );
 
-            const SizedBox(height: 32),
+                        return TransactionItemTile(
+                          item: item,
+                          currency: _currency,
+                          isOthers: isOthers,
+                          onEdit: () => _openItemForm(existing: item),
+                          onDelete: () async {
+                            setState(() {
+                              _editedItems.removeWhere(
+                                (it) => it.id == item.id,
+                              );
 
-            // Items Section Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+                              _updateOthersInEditedItems();
 
-              crossAxisAlignment: CrossAxisAlignment.end,
+                              // If any original item was removed, that's an unsaved change
+                              final anyOriginalMissing = _originalItems.any(
+                                (o) => !_editedItems.any((e) => e.id == o.id),
+                              );
 
-              children: [
-                Text(
-                  'ITEMS',
-
-                  style: TextStyle(
-                    fontSize: 12,
-
-                    fontWeight: FontWeight.w700,
-
-                    letterSpacing: 1.5,
-
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            // Items List
-            _loadingItems
-                ? Container(
-                    padding: const EdgeInsets.all(40),
-
-                    alignment: Alignment.center,
-
-                    child: const CircularProgressIndicator(),
-                  )
-                : _editedItems.isEmpty
-                ? Container(
-                    width: double.infinity,
-
-                    padding: const EdgeInsets.all(32),
-
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-
-                      borderRadius: BorderRadius.circular(16),
-
-                      border: Border.all(
-                        color: isDark
-                            ? Theme.of(
-                                context,
-                              ).colorScheme.surfaceContainerHighest
-                            : Theme.of(
-                                context,
-                              ).colorScheme.surfaceContainerHighest,
-                      ),
+                              _hasUnsavedChanges =
+                                  !_listsEqual(_originalItems, _editedItems) ||
+                                  anyOriginalMissing;
+                            });
+                          },
+                        );
+                      }).toList(),
                     ),
 
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.receipt_long_outlined,
+              // Remainder virtual item (shown only when user has added at least one item)
+              if (!_loadingItems &&
+                  _remainder() > 0.0 &&
+                  _editedItems.any(
+                    (it) => !it.id.startsWith(_othersSyntheticIdPrefix),
+                  )) ...[
+                const SizedBox(height: 12),
 
-                          size: 48,
+                Container(
+                  padding: const EdgeInsets.all(16),
 
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        CustomColors.textGreyDark.withAlpha(127),
 
-                        const SizedBox(height: 12),
-
-                        Text(
-                          'No items found.',
-
-                          style: TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-
-                            fontSize: 15,
-                          ),
-                        ),
+                        CustomColors.textGreyDark.withAlpha(200),
                       ],
                     ),
-                  )
-                : Column(
-                    children: _editedItems.map((item) {
-                      final isOthers = item.id.startsWith(
-                        _othersSyntheticIdPrefix,
-                      );
 
-                      return TransactionItemTile(
-                        item: item,
-                        currency: _currency,
-                        isOthers: isOthers,
-                        onEdit: () => _openItemForm(existing: item),
-                        onDelete: () async {
-                          setState(() {
-                            _editedItems.removeWhere((it) => it.id == item.id);
+                    borderRadius: BorderRadius.circular(16),
 
-                            _updateOthersInEditedItems();
-
-                            // If any original item was removed, that's an unsaved change
-                            final anyOriginalMissing = _originalItems.any(
-                              (o) => !_editedItems.any((e) => e.id == o.id),
-                            );
-
-                            _hasUnsavedChanges =
-                                !_listsEqual(_originalItems, _editedItems) ||
-                                anyOriginalMissing;
-                          });
-                        },
-                      );
-                    }).toList(),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
                   ),
 
-            // Remainder virtual item (shown only when user has added at least one item)
-            if (!_loadingItems &&
-                _remainder() > 0.0 &&
-                _editedItems.any(
-                  (it) => !it.id.startsWith(_othersSyntheticIdPrefix),
-                )) ...[
-              const SizedBox(height: 12),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
 
-              Container(
-                padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.outline,
 
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      CustomColors.textGreyDark.withAlpha(127),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
 
-                      CustomColors.textGreyDark.withAlpha(200),
-                    ],
-                  ),
+                        child: Icon(
+                          Icons.more_horiz_rounded,
 
-                  borderRadius: BorderRadius.circular(16),
+                          size: 20,
 
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-                ),
-
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.outline,
-
-                        borderRadius: BorderRadius.circular(12),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withAlpha(178),
+                        ),
                       ),
 
-                      child: Icon(
-                        Icons.more_horiz_rounded,
+                      const SizedBox(width: 16),
 
-                        size: 20,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+
+                          children: [
+                            Text(
+                              'Remainder',
+                              key: const Key('remainder-header'),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+
+                            const SizedBox(height: 2),
+
+                            Text(
+                              'Remainder of transaction',
+
+                              style: TextStyle(
+                                fontSize: 12,
+
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      Text(
+                        CurrencyFormatter.format(_remainder(), _currency),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      ),
+
+                      const SizedBox(width: 8),
+
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined, size: 20),
+
+                        onPressed: () {
+                          final idx = _editedItems.indexWhere(
+                            (it) => it.id.startsWith(_othersSyntheticIdPrefix),
+                          );
+
+                          if (idx >= 0) {
+                            _openItemForm(existing: _editedItems[idx]);
+                          }
+                        },
 
                         color: Theme.of(
                           context,
                         ).colorScheme.onSurface.withAlpha(178),
                       ),
-                    ),
-
-                    const SizedBox(width: 16),
-
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-
-                        children: [
-                          Text(
-                            'Remainder',
-                            key: const Key('remainder-header'),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            ),
-                          ),
-
-                          const SizedBox(height: 2),
-
-                          Text(
-                            'Remainder of transaction',
-
-                            style: TextStyle(
-                              fontSize: 12,
-
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    Text(
-                      CurrencyFormatter.format(_remainder(), _currency),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onPrimary,
-                      ),
-                    ),
-
-                    const SizedBox(width: 8),
-
-                    IconButton(
-                      icon: const Icon(Icons.edit_outlined, size: 20),
-
-                      onPressed: () {
-                        final idx = _editedItems.indexWhere(
-                          (it) => it.id.startsWith(_othersSyntheticIdPrefix),
-                        );
-
-                        if (idx >= 0) {
-                          _openItemForm(existing: _editedItems[idx]);
-                        }
-                      },
-
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withAlpha(178),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-
-            const SizedBox(height: 24),
-
-            // Action Buttons
-            Wrap(
-              spacing: 12,
-
-              runSpacing: 12,
-
-              children: [
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-
-                    disabledBackgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest,
-
-                    disabledForegroundColor: Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant,
-
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-
-                      vertical: 14,
-                    ),
-
-                    elevation: 0,
-                  ),
-
-                  onPressed: _remainder() <= 0 ? null : () => _openItemForm(),
-
-                  icon: const Icon(Icons.add_rounded, size: 20),
-
-                  label: const Text(
-                    'Add Item',
-
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                    ],
                   ),
                 ),
+              ],
 
-                if (_hasUnsavedChanges) ...[
+              const SizedBox(height: 24),
+
+              // Action Buttons
+              Wrap(
+                spacing: 12,
+
+                runSpacing: 12,
+
+                children: [
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: CustomColors.positive,
+                      backgroundColor: Theme.of(context).primaryColor,
 
                       foregroundColor: Theme.of(context).colorScheme.onPrimary,
+
+                      disabledBackgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+
+                      disabledForegroundColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
 
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -862,66 +849,103 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                       elevation: 0,
                     ),
 
-                    onPressed: () async {
-                      await _saveEditedItems();
+                    onPressed: _remainder() <= 0 ? null : () => _openItemForm(),
 
-                      setState(() => _hasUnsavedChanges = false);
-                    },
-
-                    icon: const Icon(Icons.save_outlined, size: 20),
+                    icon: const Icon(Icons.add_rounded, size: 20),
 
                     label: const Text(
-                      'Save Changes',
+                      'Add Item',
 
                       style: TextStyle(
                         fontSize: 15,
-
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
 
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: CustomColors.negative,
+                  if (_hasUnsavedChanges) ...[
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: CustomColors.positive,
 
-                      side: BorderSide(color: CustomColors.negative),
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.onPrimary,
 
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+
+                          vertical: 14,
+                        ),
+
+                        elevation: 0,
                       ),
 
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
+                      onPressed: () async {
+                        await _saveEditedItems();
 
-                        vertical: 14,
+                        setState(() => _hasUnsavedChanges = false);
+                      },
+
+                      icon: const Icon(Icons.save_outlined, size: 20),
+
+                      label: const Text(
+                        'Save Changes',
+
+                        style: TextStyle(
+                          fontSize: 15,
+
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
 
-                    onPressed: () async {
-                      await _loadItems();
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: CustomColors.negative,
 
-                      setState(() => _hasUnsavedChanges = false);
-                    },
+                        side: BorderSide(color: CustomColors.negative),
 
-                    icon: const Icon(Icons.close_rounded, size: 20),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
 
-                    label: const Text(
-                      'Discard',
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
 
-                      style: TextStyle(
-                        fontSize: 15,
+                          vertical: 14,
+                        ),
+                      ),
 
-                        fontWeight: FontWeight.w600,
+                      onPressed: () async {
+                        await _loadItems();
+
+                        setState(() => _hasUnsavedChanges = false);
+                      },
+
+                      icon: const Icon(Icons.close_rounded, size: 20),
+
+                      label: const Text(
+                        'Discard',
+
+                        style: TextStyle(
+                          fontSize: 15,
+
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
-            ),
+              ),
 
-            const SizedBox(height: 20),
-          ],
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );

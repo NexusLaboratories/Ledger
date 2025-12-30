@@ -54,13 +54,17 @@ class _BudgetCardState extends State<BudgetCard> {
     // Budget status colors based on percentage thresholds
     final Color progressColor;
     if (percent >= 100) {
-      progressColor = const Color(0xFFB71C1C); // Blood red
+      // Rustic deep red for budgets over 100%
+      progressColor = const Color(0xFF7A2F1D);
     } else if (percent >= 90) {
-      progressColor = const Color(0xFFFF6F00); // Orange
+      // Strong red for 90-99%
+      progressColor = const Color(0xFFE53935);
     } else if (percent >= 80) {
-      progressColor = const Color(0xFFFDD835); // Yellow
+      // Orange for 80-89%
+      progressColor = const Color(0xFFFF6F00);
     } else {
-      progressColor = CustomColors.budgetHealthy; // Green
+      // Green for healthy budgets
+      progressColor = CustomColors.budgetHealthy;
     }
 
     return Padding(

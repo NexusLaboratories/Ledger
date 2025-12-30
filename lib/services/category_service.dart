@@ -1,6 +1,7 @@
 import 'package:ledger/models/category.dart';
 import 'package:ledger/models/category_summary.dart';
 import 'package:ledger/services/database/category_db_service.dart';
+import 'package:ledger/services/data_refresh_service.dart';
 
 abstract class AbstractCategoryService {
   Future<List<Category>> fetchCategoriesForUser(String userId);
@@ -45,15 +46,18 @@ class CategoryService implements AbstractCategoryService {
   @override
   Future<void> createCategory(Category category) async {
     await _dbService.createCategory(category);
+    DataRefreshService().notifyCategoriesChanged();
   }
 
   @override
   Future<void> updateCategory(Category category) async {
     await _dbService.updateCategory(category);
+    DataRefreshService().notifyCategoriesChanged();
   }
 
   @override
   Future<void> deleteCategory(String categoryId) async {
     await _dbService.delete(categoryId);
+    DataRefreshService().notifyCategoriesChanged();
   }
 }

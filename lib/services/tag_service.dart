@@ -1,5 +1,6 @@
 import 'package:ledger/models/tag.dart';
 import 'package:ledger/services/database/tag_db_service.dart';
+import 'package:ledger/services/data_refresh_service.dart';
 
 abstract class AbstractTagService {
   Future<List<Tag>> fetchTagsForUser(String userId);
@@ -37,15 +38,18 @@ class TagService implements AbstractTagService {
   @override
   Future<void> createTag(Tag tag) async {
     await _dbService.createTag(tag);
+    DataRefreshService().notifyTagsChanged();
   }
 
   @override
   Future<void> updateTag(Tag tag) async {
     await _dbService.updateTag(tag);
+    DataRefreshService().notifyTagsChanged();
   }
 
   @override
   Future<void> deleteTag(String tagId) async {
     await _dbService.delete(tagId);
+    DataRefreshService().notifyTagsChanged();
   }
 }

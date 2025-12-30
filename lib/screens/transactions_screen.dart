@@ -18,6 +18,7 @@ import 'package:ledger/presets/date_formats.dart';
 import 'package:ledger/utilities/date_formatter.dart';
 import 'package:ledger/services/date_format_service.dart';
 import 'package:ledger/models/transaction.dart' as model_transaction;
+import 'package:ledger/services/data_refresh_service.dart';
 
 class TransactionsScreen extends StatefulWidget {
   final AbstractAccountService? accountService;
@@ -64,12 +65,16 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     _scrollController.addListener(_updateCurrentTitle);
     _loadDateFormat();
     DateFormatService.notifier.addListener(_onDateFormatChanged);
+    DataRefreshService().transactionsNotifier.addListener(_refresh);
+    DataRefreshService().accountsNotifier.addListener(_refresh);
     _fetchData();
   }
 
   @override
   void dispose() {
     DateFormatService.notifier.removeListener(_onDateFormatChanged);
+    DataRefreshService().transactionsNotifier.removeListener(_refresh);
+    DataRefreshService().accountsNotifier.removeListener(_refresh);
     _scrollController.dispose();
     super.dispose();
   }
