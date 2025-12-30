@@ -22,7 +22,7 @@ class _RecentActivitiesWidgetState extends State<RecentActivitiesWidget> {
   final AccountService _accountService = AccountService();
   List<Activity> _recentActivities = [];
   bool _isLoading = true;
-  String _currency = 'USD';
+  String _currency = 'INR';
   Map<String, String> _accountNames = {};
 
   String _dateFormatKey = '';

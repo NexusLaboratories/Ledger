@@ -22,7 +22,7 @@ class CategoryChildTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final amountText = amount != null
-        ? CurrencyFormatter.format(amount!, currency ?? 'USD')
+        ? CurrencyFormatter.format(amount!, currency ?? 'INR')
         : '-';
     return Material(
       color: Colors.transparent,

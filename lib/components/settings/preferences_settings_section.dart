@@ -6,6 +6,7 @@ import 'package:ledger/utilities/date_formatter.dart';
 import 'package:ledger/services/date_format_service.dart';
 import 'package:ledger/constants/ui_constants.dart';
 import 'package:ledger/presets/routes.dart';
+import 'package:ledger/presets/currencies.dart';
 
 class PreferencesSettingsSection extends StatelessWidget {
   final String defaultCurrency;
@@ -28,45 +29,93 @@ class PreferencesSettingsSection extends StatelessWidget {
         SettingsListTile(
           icon: Icons.attach_money,
           title: UIConstants.defaultCurrency,
-          trailing: DropdownButton<String>(
-            value: defaultCurrency,
-            underline: const SizedBox(),
-            items: const [
-              DropdownMenuItem(
-                value: UIConstants.usd,
-                child: Text(UIConstants.usd),
-              ),
-              DropdownMenuItem(
-                value: UIConstants.eur,
-                child: Text(UIConstants.eur),
-              ),
-              DropdownMenuItem(
-                value: UIConstants.gbp,
-                child: Text(UIConstants.gbp),
-              ),
-              DropdownMenuItem(
-                value: UIConstants.inr,
-                child: Text(UIConstants.inr),
-              ),
-              DropdownMenuItem(
-                value: UIConstants.jpy,
-                child: Text(UIConstants.jpy),
-              ),
-              DropdownMenuItem(
-                value: UIConstants.aud,
-                child: Text(UIConstants.aud),
-              ),
-              DropdownMenuItem(
-                value: UIConstants.cad,
-                child: Text(UIConstants.cad),
-              ),
-            ],
-            onChanged: (value) async {
-              if (value != null) {
-                onCurrencyChanged(value);
-                await UserPreferenceService.setDefaultCurrency(value: value);
+          trailing: InkWell(
+            onTap: () async {
+              final selected = await showDialog<String?>(
+                context: context,
+                builder: (dialogContext) {
+                  String query = '';
+
+                  // Create a sorted list of entries to present (sorted by currency code)
+                  final entries = supportedCurrencies.entries.toList()
+                    ..sort((a, b) => a.key.compareTo(b.key));
+
+                  return StatefulBuilder(
+                    builder: (context, setState) {
+                      final filtered = entries.where((e) {
+                        final q = query.trim().toLowerCase();
+                        if (q.isEmpty) return true;
+                        return e.key.toLowerCase().contains(q) ||
+                            e.value.toLowerCase().contains(q);
+                      }).toList();
+
+                      return AlertDialog(
+                        title: const Text('Select currency'),
+                        content: SizedBox(
+                          width: double.maxFinite,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextField(
+                                decoration: const InputDecoration(
+                                  prefixIcon: Icon(Icons.search),
+                                  hintText: 'Search code or currency name',
+                                ),
+                                onChanged: (v) => setState(() => query = v),
+                              ),
+                              const SizedBox(height: 12),
+                              Expanded(
+                                child: filtered.isEmpty
+                                    ? const Center(child: Text('No results'))
+                                    : ListView.builder(
+                                        shrinkWrap: true,
+                                        itemCount: filtered.length,
+                                        itemBuilder: (context, idx) {
+                                          final item = filtered[idx];
+                                          return ListTile(
+                                            title: Text(item.key),
+                                            subtitle: Text(item.value),
+                                            onTap: () => Navigator.of(
+                                              context,
+                                            ).pop(item.key),
+                                          );
+                                        },
+                                      ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Cancel'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              );
+
+              if (selected != null && selected != defaultCurrency) {
+                onCurrencyChanged(selected);
+                await UserPreferenceService.setDefaultCurrency(value: selected);
               }
             },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  defaultCurrency.toUpperCase(),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.arrow_drop_down),
+              ],
+            ),
           ),
         ),
         const Divider(height: 1),

@@ -45,7 +45,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   Map<String, List<CategorySummary>> _categorySummaries = {};
   Map<String, String> _accountNames = {};
   String _dateFormatKey = DateFormats.defaultKey;
-  String _currency = 'USD';
+  String _currency = 'INR';
   double _totalIncome = 0.0;
   double _totalExpense = 0.0;
   int _totalTransactions = 0;

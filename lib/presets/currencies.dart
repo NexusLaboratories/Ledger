@@ -1,0 +1,66 @@
+// Supported currencies list for selection and display
+// This file contains a conservative but comprehensive list of common
+// ISO 4217 currency codes and their English names. UI can use this to
+// present a currency picker in settings.
+
+const Map<String, String> supportedCurrencies = {
+  'INR': 'Indian Rupee',
+  'USD': 'United States Dollar',
+  'EUR': 'Euro',
+  'GBP': 'British Pound Sterling',
+  'JPY': 'Japanese Yen',
+  'CNY': 'Chinese Yuan',
+  'AUD': 'Australian Dollar',
+  'CAD': 'Canadian Dollar',
+  'CHF': 'Swiss Franc',
+  'SEK': 'Swedish Krona',
+  'NOK': 'Norwegian Krone',
+  'DKK': 'Danish Krone',
+  'SGD': 'Singapore Dollar',
+  'HKD': 'Hong Kong Dollar',
+  'NZD': 'New Zealand Dollar',
+  'MXN': 'Mexican Peso',
+  'BRL': 'Brazilian Real',
+  'ZAR': 'South African Rand',
+  'RUB': 'Russian Ruble',
+  'TRY': 'Turkish Lira',
+  'KRW': 'South Korean Won',
+  'PLN': 'Polish Zloty',
+  'IDR': 'Indonesian Rupiah',
+  'THB': 'Thai Baht',
+  'MYR': 'Malaysian Ringgit',
+  'PHP': 'Philippine Peso',
+  'VND': 'Vietnam Dong',
+  'AED': 'United Arab Emirates Dirham',
+  'SAR': 'Saudi Riyal',
+  'EGP': 'Egyptian Pound',
+  'NGN': 'Nigerian Naira',
+  'KES': 'Kenyan Shilling',
+  'GHS': 'Ghanaian Cedi',
+  'TWD': 'New Taiwan Dollar',
+  'ISK': 'Iceland Krona',
+  'CZK': 'Czech Koruna',
+  'HUF': 'Hungarian Forint',
+  'ILS': 'Israeli New Shekel',
+  'CLP': 'Chilean Peso',
+  'COP': 'Colombian Peso',
+  'ARS': 'Argentine Peso',
+  'PEN': 'Peruvian Sol',
+  'RON': 'Romanian Leu',
+  'HRK': 'Croatian Kuna',
+  'BGN': 'Bulgarian Lev',
+  'UAH': 'Ukrainian Hryvnia',
+  'LKR': 'Sri Lankan Rupee',
+  'PKR': 'Pakistani Rupee',
+  'BDT': 'Bangladeshi Taka',
+  'KZT': 'Kazakhstani Tenge',
+  'MAD': 'Moroccan Dirham',
+  'DZD': 'Algerian Dinar',
+  'TZS': 'Tanzanian Shilling',
+  'UGX': 'Ugandan Shilling',
+};
+
+String currencyDisplayLabel(String code) {
+  final upper = code.toUpperCase();
+  return supportedCurrencies[upper] ?? upper;
+}

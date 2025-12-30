@@ -25,7 +25,7 @@ class Account {
     DateTime? createdAt,
     DateTime? updatedAt,
   }) : id = (id ?? Utilities.generateUuid()),
-       currency = (currency ?? 'USD'),
+       currency = (currency ?? 'INR'),
        balance = (balance ?? 0.0),
        createdAt = (createdAt ?? DateTime.now()),
        updatedAt = (updatedAt ?? DateTime.now());

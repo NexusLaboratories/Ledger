@@ -11,6 +11,7 @@ class NotificationsSettingsSection extends StatelessWidget {
   final bool budgetNotify50;
   final bool budgetNotify80;
   final bool budgetNotify90;
+  final bool donationReminderEnabled;
   final ValueChanged<bool> onNotificationsChanged;
   final ValueChanged<bool> onReportReminderChanged;
   final ValueChanged<int> onReportReminderFrequencyChanged;
@@ -18,6 +19,7 @@ class NotificationsSettingsSection extends StatelessWidget {
   final ValueChanged<bool> onBudgetNotify50Changed;
   final ValueChanged<bool> onBudgetNotify80Changed;
   final ValueChanged<bool> onBudgetNotify90Changed;
+  final ValueChanged<bool> onDonationReminderChanged;
 
   const NotificationsSettingsSection({
     super.key,
@@ -28,6 +30,7 @@ class NotificationsSettingsSection extends StatelessWidget {
     required this.budgetNotify50,
     required this.budgetNotify80,
     required this.budgetNotify90,
+    required this.donationReminderEnabled,
     required this.onNotificationsChanged,
     required this.onReportReminderChanged,
     required this.onReportReminderFrequencyChanged,
@@ -35,6 +38,7 @@ class NotificationsSettingsSection extends StatelessWidget {
     required this.onBudgetNotify50Changed,
     required this.onBudgetNotify80Changed,
     required this.onBudgetNotify90Changed,
+    required this.onDonationReminderChanged,
   });
 
   @override
@@ -164,6 +168,21 @@ class NotificationsSettingsSection extends StatelessWidget {
             ),
           ),
         ],
+        const Divider(height: 1),
+        SettingsSwitchTile(
+          icon: Icons.favorite_outline,
+          title: UIConstants.donationReminder,
+          value: donationReminderEnabled,
+          enabled: notificationsEnabled,
+          onChanged: notificationsEnabled
+              ? (value) async {
+                  onDonationReminderChanged(value);
+                  await UserPreferenceService.setDonationReminderEnabled(
+                    value: value,
+                  );
+                }
+              : null,
+        ),
       ],
     );
   }

@@ -25,7 +25,7 @@ class AccountCard extends StatefulWidget {
 }
 
 class _AccountCardState extends State<AccountCard> {
-  String _currency = 'USD';
+  String _currency = 'INR';
 
   @override
   void initState() {

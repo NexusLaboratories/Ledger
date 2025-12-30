@@ -184,9 +184,7 @@ class CustomAppDrawer extends StatelessWidget {
                     icon: Icons.favorite_rounded,
                     title: 'Support Us',
                     onTap: () async {
-                      final url = Uri.parse(
-                        'https://kalkieshward.me/supportme',
-                      );
+                      final url = Uri.parse('https://kalkieshward.me/support');
                       try {
                         await launchUrl(
                           url,

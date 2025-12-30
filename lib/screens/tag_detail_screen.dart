@@ -42,7 +42,7 @@ class _TagDetailScreenState extends State<TagDetailScreen> {
   late Future<void> _loadFuture;
   List<model_transaction.Transaction> _transactions = [];
   Map<String, String> _accountNames = {};
-  String _currency = 'USD';
+  String _currency = 'INR';
   double _totalIncome = 0.0;
   double _totalExpense = 0.0;
   bool _descriptionExpanded = false;

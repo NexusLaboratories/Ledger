@@ -25,7 +25,7 @@ class DashboardConstants {
   static const String secureYourDataTitle = 'Secure Your Data';
   static const String databasePasswordLabel = 'Database Password';
   static const String databasePasswordDescription =
-      'Set a password to encrypt your database. This password will be required each time you start the app.';
+      'Set a password to encrypt your database. Your data may be lost if you forget it.';
   static const String minimumCharactersHint = 'Minimum 4 characters';
   static const String setPasswordAndContinueLabel = 'Set Password & Continue';
   static const String passwordCannotBeEmptyError = 'Password cannot be empty';
@@ -52,7 +52,7 @@ class DashboardConstants {
   static const String accountTransactionsRoute = '/account-transactions';
 
   // Default Values
-  static const String defaultCurrency = 'USD';
+  static const String defaultCurrency = 'INR';
   static const int minimumPasswordLength = 4;
 
   // Colors (theme-aware)

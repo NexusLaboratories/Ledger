@@ -1,4 +1,4 @@
-package com.example.ledger
+package org.nexuslabs.ledger
 
 import io.flutter.embedding.android.FlutterActivity
 

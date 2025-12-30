@@ -34,6 +34,9 @@ abstract class AbstractNotificationService {
   Future<bool> areNotificationsEnabled();
   Future<void> scheduleReportReminders();
   Future<void> cancelReportReminders();
+  Future<void> scheduleDonationReminders();
+  Future<void> cancelDonationReminders();
+  Future<void> checkAndScheduleDonationReminder();
 }
 
 class NotificationService implements AbstractNotificationService {
@@ -354,5 +357,64 @@ class NotificationService implements AbstractNotificationService {
   @override
   Future<void> cancelReportReminders() async {
     await _flutterLocalNotificationsPlugin.cancel(999);
+  }
+
+  @override
+  Future<void> scheduleDonationReminders() async {
+    // Cancel existing donation reminders first
+    await cancelDonationReminders();
+
+    final isEnabled = await UserPreferenceService.isDonationReminderEnabled();
+    if (!isEnabled) return;
+
+    // Schedule for the first day of next month at 10 AM
+    final now = DateTime.now();
+    final nextMonth = now.month == 12 ? 1 : now.month + 1;
+    final nextYear = now.month == 12 ? now.year + 1 : now.year;
+    final nextReminder = DateTime(nextYear, nextMonth, 1, 10, 0);
+
+    await _flutterLocalNotificationsPlugin.zonedSchedule(
+      998, // Fixed ID for donation reminders
+      'Support Nexus Ledger',
+      'Love the app? Consider supporting our FOSS project to keep it free and improving!',
+      tz.TZDateTime.from(nextReminder, tz.local),
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          _channelId,
+          _channelName,
+          channelDescription: _channelDescription,
+          importance: Importance.high,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.dayOfMonthAndTime,
+    );
+
+    // Update last reminder date
+    await UserPreferenceService.setLastDonationReminder(date: nextReminder);
+
+    LoggerService.i('Scheduled donation reminder for $nextReminder');
+  }
+
+  @override
+  Future<void> cancelDonationReminders() async {
+    await _flutterLocalNotificationsPlugin.cancel(998);
+  }
+
+  @override
+  Future<void> checkAndScheduleDonationReminder() async {
+    final isEnabled = await UserPreferenceService.isDonationReminderEnabled();
+    if (!isEnabled) return;
+
+    final lastReminder = await UserPreferenceService.getLastDonationReminder();
+    final now = DateTime.now();
+
+    // If never reminded or last reminder was more than a month ago, schedule new one
+    if (lastReminder == null || now.difference(lastReminder).inDays >= 30) {
+      await scheduleDonationReminders();
+    }
   }
 }

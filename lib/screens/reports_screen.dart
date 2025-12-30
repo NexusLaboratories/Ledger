@@ -49,7 +49,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   SpendingSummary? _currentYearSummary;
   SpendingSummary? _allTimeSummary;
 
-  String _currency = 'USD';
+  String _currency = 'INR';
   String _dateFormatKey = DateFormats.defaultKey;
 
   Future<void> _loadDateFormat() async {

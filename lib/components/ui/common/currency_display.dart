@@ -16,7 +16,7 @@ class CurrencyDisplay extends StatelessWidget {
     return FutureBuilder<String>(
       future: UserPreferenceService.getDefaultCurrency(),
       builder: (context, snapshot) {
-        final currency = snapshot.data ?? 'USD';
+        final currency = snapshot.data ?? 'INR';
         return Text(CurrencyFormatter.format(amount, currency), style: style);
       },
     );

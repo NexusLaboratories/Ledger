@@ -17,23 +17,29 @@ class SettingsConstants {
 
   // Password messages
   static const String passwordSetSuccessMessage = 'Password set successfully!';
-  static const String passwordRestoredMessage = 'Password restored successfully!';
+  static const String passwordRestoredMessage =
+      'Password restored successfully!';
 
   // Database reset dialog
   static const String resetDatabaseTitle = 'Reset Database';
-  static const String resetDatabaseWarningTitle = 'This will permanently delete:';
+  static const String resetDatabaseWarningTitle =
+      'This will permanently delete:';
   static const String resetDatabaseAccounts = '• All accounts';
   static const String resetDatabaseTransactions = '• All transactions';
   static const String resetDatabaseCategories = '• All categories';
   static const String resetDatabasePassword = '• Database password';
-  static const String resetDatabaseIrreversibleWarning = 'This action cannot be undone!';
-  static const String resetDatabasePasswordPrompt = 'Enter your password to confirm:';
+  static const String resetDatabaseIrreversibleWarning =
+      'This action cannot be undone!';
+  static const String resetDatabasePasswordPrompt =
+      'Enter your password to confirm:';
   static const String resetDatabaseTextPrompt = 'Type "DELETE" to confirm:';
   static const String resetDatabaseCurrentPasswordLabel = 'Current Password';
   static const String resetDatabaseDeleteLabel = 'Type DELETE';
   static const String resetDatabaseIncorrectPassword = 'Incorrect password';
-  static const String resetDatabaseTypeDeleteError = 'Please type DELETE to confirm';
-  static const String resetDatabaseSuccessMessage = 'Database reset successfully. Please restart the app.';
+  static const String resetDatabaseTypeDeleteError =
+      'Please type DELETE to confirm';
+  static const String resetDatabaseSuccessMessage =
+      'Database reset successfully. Please restart the app.';
   static const String resetDatabaseErrorPrefix = 'Error resetting database:';
 
   // Export messages
@@ -43,7 +49,8 @@ class SettingsConstants {
 
   // Import messages
   static const String importDialogTitle = 'Import Data';
-  static const String importDialogContent = 'Do you want to replace all existing data or merge with current data?\n\n'
+  static const String importDialogContent =
+      'Do you want to replace all existing data or merge with current data?\n\n'
       'Replace: Deletes all current data first.\n'
       'Merge: Keeps existing data and adds imported data.';
   static const String importLoadingMessage = 'Importing data...';
@@ -52,7 +59,8 @@ class SettingsConstants {
   static const String importErrorPrefix = 'Import failed:';
 
   // Import stats template
-  static const String importStatsTemplate = '\n\nImported:\n'
+  static const String importStatsTemplate =
+      '\n\nImported:\n'
       '• {accounts} accounts\n'
       '• {transactions} transactions\n'
       '• {categories} categories\n'
@@ -70,6 +78,6 @@ class SettingsConstants {
   static const String okButton = 'OK';
 
   // Default values
-  static const String defaultCurrency = 'USD';
+  static const String defaultCurrency = 'INR';
   static const String biometricNotAvailable = 'Not available';
 }

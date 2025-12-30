@@ -236,26 +236,12 @@ class _ChatsScreenState extends State<ChatsScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                if (isCurrentChat)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: CustomColors.primary,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      'Active',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
                 IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 40,
+                    minHeight: 40,
+                  ),
                   icon: const Icon(Icons.delete_outline),
                   color: Colors.red,
                   onPressed: () => _deleteChat(chat),

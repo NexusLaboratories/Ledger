@@ -46,7 +46,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
   // Note: use injected services via _transactionServiceImpl, _accountServiceImpl, _categoryServiceImpl
   late final TransactionService _transactionServiceImpl;
   late final CategoryService _categoryServiceImpl;
-  String _currency = 'USD';
+  String _currency = 'INR';
   String _dateFormatKey = DateFormats.defaultKey;
 
   Future<void> _loadDateFormat() async {

@@ -18,7 +18,7 @@ class _BudgetProgressWidgetState extends State<BudgetProgressWidget> {
   final BudgetService _budgetService = BudgetService();
   List<BudgetProgress> _progressList = [];
   bool _isLoading = true;
-  String _currency = 'USD';
+  String _currency = 'INR';
 
   @override
   void initState() {

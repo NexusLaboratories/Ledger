@@ -1,0 +1,39 @@
+Nexus Ledger is a free and open-source personal finance management app that helps you track your accounts, transactions, budgets, and spending patterns.
+
+<b>Key Features:</b>
+
+• <b>Account Management</b>: Create and manage multiple accounts (checking, savings, credit cards, etc.)
+• <b>Transaction Tracking</b>: Add income and expenses with categories and tags
+• <b>Budget Monitoring</b>: Set budgets and get notifications when you reach spending thresholds
+• <b>Reports & Statistics</b>: Visualize your spending patterns with charts and reports
+• <b>Export Report Support</b>: Export transactions to xlsx and repots through pdfs
+• <b>AI Assistant</b>: Chat with a financial AI assistant for insights about your spending with BYOM 
+• <b>Categories & Tags</b>: Organize transactions with customizable categories and tags
+• <b>Data Import/Export</b>: Backup and restore your data in JSON format
+• <b>Encrypted Database</b>: Your financial data is protected with SQLCipher encryption
+• <b>Dark Mode</b>: Switch between light and dark themes
+• <b>Multi-Currency Support</b>: Track accounts in different currencies
+
+
+<b>Privacy & Security:</b>
+
+• All data is stored locally on your device with encryption
+• Optional password protection with biometric unlock
+• Your financial data stays private and secure
+
+<b>Free & Open Source:</b>
+
+Nexus Ledger is maintained by volunteers who donate their time and resources. This is a FOSS (Free and Open Source Software) project, which means:
+• No ads or tracking
+• Community-driven development
+• Transparent and auditable code
+
+If you find this app valuable, please consider supporting the project to help keep it free and improving!
+
+<b>Notifications:</b>
+
+• Budget threshold alerts (50%, 80%, 90%)
+• Monthly report reminders
+• Optional donation reminders to support the project
+
+Take control of your financial journey with Nexus Ledger!

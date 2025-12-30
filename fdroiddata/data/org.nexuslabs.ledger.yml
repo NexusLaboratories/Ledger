@@ -1,0 +1,33 @@
+- id: org.nexuslabs.ledger
+  name: Ledger
+  summary: Personal finance ledger — budgets, transactions, and exports
+  description: |
+    Ledger is a local-first personal finance app built with Flutter. It
+    uses SQLCipher for encrypted local storage and aims to be privacy
+    preserving and fully FOSS.
+  license: GPL-3.0
+  repo: https://github.com/KalkiEshwarD/Nexus
+  source:
+    vcs: git
+    url: https://github.com/KalkiEshwarD/Nexus.git
+    dir: ledger
+    # Please create and point to a tagged release like `v1.0.0` before
+    # asking F‑Droid to build; maintainers will usually request this.
+    tag: v1.0.0
+  version: 1.0.0
+  build:
+    - gradle
+  gradle:
+    # Build from the Android subdirectory inside the repo
+    subdir: ledger/android
+    build-command: ./gradlew assembleRelease
+    outputs:
+      - app/build/outputs/apk/release/app-release-unsigned.apk
+  android:
+    applicationId: org.nexuslabs.ledger
+  remarks: |
+    - F‑Droid will sign the built APK with their key; you do not need to
+      provide your keystore.
+    - If the build fails on the server, maintainers will open merge
+      request feedback which should be addressed (missing tags, build
+      issues, non-free dependencies, etc.).

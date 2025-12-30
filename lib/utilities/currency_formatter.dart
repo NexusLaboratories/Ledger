@@ -2,10 +2,10 @@ import 'package:intl/intl.dart';
 
 class CurrencyFormatter {
   /// Format an amount according to currency code.
-  /// Accepts nullable [currencyCode] and defaults to 'USD'.
+  /// Accepts nullable [currencyCode] and defaults to 'INR'.
   /// Falls back to '`amount` `currency`' if the formatter cannot render a symbol.
   static String format(double amount, String currencyCode) {
-    final code = (currencyCode.isEmpty) ? 'USD' : currencyCode;
+    final code = (currencyCode.isEmpty) ? 'INR' : currencyCode;
     try {
       // Use named currency code; NumberFormat will attempt to use a symbol
       final format = NumberFormat.simpleCurrency(name: code);
@@ -17,7 +17,7 @@ class CurrencyFormatter {
 
   /// Compact formatting for axis labels (e.g. 1.2K, 3.5M) with currency symbol
   static String formatCompact(double amount, String currencyCode) {
-    final code = (currencyCode.isEmpty) ? 'USD' : currencyCode;
+    final code = (currencyCode.isEmpty) ? 'INR' : currencyCode;
     try {
       // Use compact currency formatter when available
       final compact = NumberFormat.compactSimpleCurrency(name: code);

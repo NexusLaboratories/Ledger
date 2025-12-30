@@ -73,7 +73,7 @@ class DatabaseService implements AbstractDatabaseService {
     CREATE TABLE IF NOT EXISTS accounts (
       account_id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
-      currency TEXT NOT NULL DEFAULT 'USD',
+      currency TEXT NOT NULL DEFAULT 'INR',
       account_name TEXT NOT NULL,
       account_description TEXT,
       balance REAL NOT NULL DEFAULT 0.0,

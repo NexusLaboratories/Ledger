@@ -45,6 +45,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _budgetNotify50 = true;
   bool _budgetNotify80 = true;
   bool _budgetNotify90 = true;
+  bool _donationReminderEnabled = true;
   bool _useBiometric = false;
   String _defaultCurrency = SettingsConstants.defaultCurrency;
   bool _hasPassword = false;
@@ -110,12 +111,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 budgetNotify50: _budgetNotify50,
                 budgetNotify80: _budgetNotify80,
                 budgetNotify90: _budgetNotify90,
+                donationReminderEnabled: _donationReminderEnabled,
                 onNotificationsChanged: (value) async {
                   setState(() => _notificationsEnabled = value);
                   if (!value) {
                     // Cancel all notifications when master toggle is turned off
                     final notificationService = getIt<NotificationService>();
                     await notificationService.cancelReportReminders();
+                    await notificationService.cancelDonationReminders();
                   }
                 },
                 onReportReminderChanged: (value) async {
@@ -142,6 +145,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     setState(() => _budgetNotify80 = value),
                 onBudgetNotify90Changed: (value) =>
                     setState(() => _budgetNotify90 = value),
+                onDonationReminderChanged: (value) async {
+                  setState(() => _donationReminderEnabled = value);
+                  final notificationService = getIt<NotificationService>();
+                  if (value) {
+                    await notificationService.scheduleDonationReminders();
+                  } else {
+                    await notificationService.cancelDonationReminders();
+                  }
+                },
               ),
             ),
             const SizedBox(height: SettingsConstants.sectionSpacing),
@@ -236,6 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       UserPreferenceService.isBudgetNotification50Enabled(),
       UserPreferenceService.isBudgetNotification80Enabled(),
       UserPreferenceService.isBudgetNotification90Enabled(),
+      UserPreferenceService.isDonationReminderEnabled(),
       UserPreferenceService.isUseBiometric(),
       UserPreferenceService.getDefaultCurrency(),
       UserPreferenceService.isDatabasePasswordSet(),
@@ -257,16 +270,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final budgetNotify50 = results[6] as bool;
     final budgetNotify80 = results[7] as bool;
     final budgetNotify90 = results[8] as bool;
-    final useBiometric = results[9] as bool;
-    final defaultCurrency = results[10] as String;
-    final hasPassword = results[11] as bool;
-    final dateFormatKey = results[12] as String;
-    final biometricSupported = results[13] as bool;
-    final availableBiometrics = results[14] as List<BiometricType>;
-    final aiEndpoint = results[15] as String;
-    final aiApiKey = results[16] as String;
-    final aiModel = results[17] as String;
-    final fabDirectAction = results[18] as bool;
+    final donationReminderEnabled = results[9] as bool;
+    final useBiometric = results[10] as bool;
+    final defaultCurrency = results[11] as String;
+    final hasPassword = results[12] as bool;
+    final dateFormatKey = results[13] as String;
+    final biometricSupported = results[14] as bool;
+    final availableBiometrics = results[15] as List<BiometricType>;
+    final aiEndpoint = results[16] as String;
+    final aiApiKey = results[17] as String;
+    final aiModel = results[18] as String;
+    final fabDirectAction = results[19] as bool;
     final biometricTypeDesc = BiometricService.getBiometricTypeDescription(
       availableBiometrics,
     );
@@ -281,6 +295,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _budgetNotify50 = budgetNotify50;
       _budgetNotify80 = budgetNotify80;
       _budgetNotify90 = budgetNotify90;
+      _donationReminderEnabled = donationReminderEnabled;
       _useBiometric = useBiometric;
       _defaultCurrency = defaultCurrency;
       _hasPassword = hasPassword;

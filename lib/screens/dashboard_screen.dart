@@ -756,12 +756,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.blue.withAlpha(25),
+                                color: CustomColors.positive.withAlpha(25),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
                                 Icons.lock_outline,
-                                color: Colors.blue[700],
+                                color: CustomColors.positive,
                                 size: 28,
                               ),
                             ),

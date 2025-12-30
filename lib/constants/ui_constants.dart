@@ -12,6 +12,7 @@ class UIConstants {
   static const String budgetNotify50 = 'Notify at 50%';
   static const String budgetNotify80 = 'Notify at 80%';
   static const String budgetNotify90 = 'Notify at 90%';
+  static const String donationReminder = 'Donation reminder';
   static const String defaultCurrency = 'Default currency';
   static const String dateFormat = 'Date format';
 

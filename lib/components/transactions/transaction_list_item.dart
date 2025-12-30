@@ -30,7 +30,7 @@ class TransactionListItem extends StatefulWidget {
 }
 
 class _TransactionListItemState extends State<TransactionListItem> {
-  String _currency = 'USD';
+  String _currency = 'INR';
   String _dateFormatKey = DateFormats.defaultKey;
 
   @override

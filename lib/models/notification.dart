@@ -5,6 +5,7 @@ enum NotificationType {
   transactionAlert,
   scheduledReminder,
   reportReminder,
+  donationReminder,
 }
 
 enum NotificationPriority { low, normal, high, urgent }

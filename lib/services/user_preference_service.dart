@@ -29,6 +29,10 @@ class UserPreferenceService {
   static const String _budgetNotification80Key = 'budget_notification_80';
   static const String _budgetNotification90Key = 'budget_notification_90';
 
+  // Donation reminder preferences
+  static const String _donationReminderEnabledKey = 'donation_reminder_enabled';
+  static const String _lastDonationReminderKey = 'last_donation_reminder';
+
   // Date format preference
   static const String _dateFormatKey = 'date_format';
 
@@ -107,9 +111,10 @@ class UserPreferenceService {
   static Future<bool> isNotificationsEnabled() async {
     try {
       final value = await SecureStorage.getValue(key: _notificationsEnabledKey);
+      if (value == null) return true; // Default enabled on fresh install
       return value == 'true';
     } catch (_) {
-      return false;
+      return true; // Default enabled if storage fails
     }
   }
 
@@ -138,9 +143,9 @@ class UserPreferenceService {
   static Future<String> getDefaultCurrency() async {
     try {
       final value = await SecureStorage.getValue(key: _defaultCurrencyKey);
-      return (value as String?) ?? 'USD';
+      return (value as String?) ?? 'INR';
     } catch (_) {
-      return 'USD';
+      return 'INR';
     }
   }
 
@@ -248,9 +253,10 @@ class UserPreferenceService {
       final value = await SecureStorage.getValue(
         key: _dashboardNotificationsEnabledKey,
       );
+      if (value == null) return true; // Default enabled on fresh install
       return value == 'true';
     } catch (_) {
-      return false;
+      return true; // Default enabled if storage fails
     }
   }
 
@@ -267,9 +273,10 @@ class UserPreferenceService {
       final value = await SecureStorage.getValue(
         key: _reportReminderEnabledKey,
       );
+      if (value == null) return true; // Default enabled on fresh install
       return value == 'true';
     } catch (_) {
-      return false;
+      return true; // Default enabled if storage fails
     }
   }
 
@@ -307,9 +314,10 @@ class UserPreferenceService {
       final value = await SecureStorage.getValue(
         key: _budgetNotificationsEnabledKey,
       );
+      if (value == null) return true; // Default enabled on fresh install
       return value == 'true';
     } catch (_) {
-      return false;
+      return true; // Default enabled if storage fails
     }
   }
 
@@ -325,6 +333,7 @@ class UserPreferenceService {
   static Future<bool> isBudgetNotification50Enabled() async {
     try {
       final value = await SecureStorage.getValue(key: _budgetNotification50Key);
+      if (value == null) return true; // Default enabled on fresh install
       return value == 'true';
     } catch (_) {
       return true; // Default enabled
@@ -343,6 +352,7 @@ class UserPreferenceService {
   static Future<bool> isBudgetNotification80Enabled() async {
     try {
       final value = await SecureStorage.getValue(key: _budgetNotification80Key);
+      if (value == null) return true; // Default enabled on fresh install
       return value == 'true';
     } catch (_) {
       return true; // Default enabled
@@ -361,6 +371,7 @@ class UserPreferenceService {
   static Future<bool> isBudgetNotification90Enabled() async {
     try {
       final value = await SecureStorage.getValue(key: _budgetNotification90Key);
+      if (value == null) return true; // Default enabled on fresh install
       return value == 'true';
     } catch (_) {
       return true; // Default enabled
@@ -454,6 +465,46 @@ class UserPreferenceService {
       return value == 'true';
     } catch (_) {
       return false; // Default to showing menu
+    }
+  }
+
+  // Donation reminder settings
+  static Future<void> setDonationReminderEnabled({required bool value}) async {
+    await SecureStorage.setValue(
+      key: _donationReminderEnabledKey,
+      value: value.toString(),
+    );
+  }
+
+  static Future<bool> isDonationReminderEnabled() async {
+    try {
+      final value = await SecureStorage.getValue(
+        key: _donationReminderEnabledKey,
+      );
+      if (value == null) return true; // Default enabled on fresh install
+      return value == 'true';
+    } catch (_) {
+      return true; // Default enabled
+    }
+  }
+
+  static Future<void> setLastDonationReminder({required DateTime date}) async {
+    await SecureStorage.setValue(
+      key: _lastDonationReminderKey,
+      value: date.millisecondsSinceEpoch.toString(),
+    );
+  }
+
+  static Future<DateTime?> getLastDonationReminder() async {
+    try {
+      final value = await SecureStorage.getValue(key: _lastDonationReminderKey);
+      if (value == null) return null;
+      final millis = int.tryParse(value);
+      return millis != null
+          ? DateTime.fromMillisecondsSinceEpoch(millis)
+          : null;
+    } catch (_) {
+      return null;
     }
   }
 }

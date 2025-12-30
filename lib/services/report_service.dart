@@ -335,7 +335,7 @@ class ReportService {
 
   Future<Uint8List> generateReportPdf(
     ReportOptions options, {
-    String currency = 'USD',
+    String currency = 'INR',
   }) async {
     final pdf = pw.Document();
 

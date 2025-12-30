@@ -146,6 +146,38 @@ class AiService {
 
           messages.add(toolMessage);
         }
+      } else {
+        // No tool calls from the model — infer tools heuristically based on the user query
+        final inferred = _inferInitialTools(userMessage);
+        if (inferred.isNotEmpty) {
+          LoggerService.i(
+            'AI Service: No tool calls from model, inferring tools: ${inferred.map((e) => e['name']).join(', ')}',
+          );
+          for (final inf in inferred) {
+            final toolName = inf['name'] as String;
+            final toolArgs = inf['arguments'] as Map<String, dynamic>;
+
+            LoggerService.i(
+              'AI Service: Executing inferred tool: $toolName with args: $toolArgs',
+            );
+            final toolResult = await _executeTool(toolName, toolArgs);
+            LoggerService.i(
+              'AI Service: Inferred Tool $toolName result: ${toolResult.toString().substring(0, math.min(200, toolResult.toString().length))}...',
+            );
+
+            final toolMessage = <String, dynamic>{
+              'role': 'tool',
+              'tool_call_id': DateTime.now().millisecondsSinceEpoch.toString(),
+              'content': jsonEncode(toolResult),
+            };
+
+            if (!apiEndpoint.contains('cohere.com')) {
+              toolMessage['name'] = toolName;
+            }
+
+            messages.add(toolMessage);
+          }
+        }
       }
 
       // ========== API CALL 2: Get additional tools if needed ==========
@@ -770,6 +802,62 @@ Go to Settings → AI Assistant to update your configuration.''',
     return null;
   }
 
+  /// Infer which tools are needed for a user message when the model doesn't request tools
+  List<Map<String, dynamic>> _inferInitialTools(String userMessage) {
+    final text = userMessage.toLowerCase();
+    final results = <Map<String, dynamic>>[];
+
+    // Spending / suggestions about reducing spending
+    if (text.contains('spend') ||
+        text.contains('spending') ||
+        text.contains('reduce') ||
+        text.contains('stop spending') ||
+        text.contains('suggest') ||
+        text.contains('what should i') ||
+        text.contains('advice')) {
+      results.add({'name': 'get_spending_by_category', 'arguments': {}});
+      results.add({
+        'name': 'get_top_expenses',
+        'arguments': {'limit': 5},
+      });
+    }
+
+    // Transactions / recent transactions
+    if (text.contains('transaction') ||
+        text.contains('transactions') ||
+        text.contains('recent transactions')) {
+      results.add({
+        'name': 'get_recent_transactions',
+        'arguments': {'limit': 10},
+      });
+    }
+
+    // Budgets
+    if (text.contains('budget') || text.contains('budgets')) {
+      results.add({'name': 'get_budget_status', 'arguments': {}});
+    }
+
+    // Accounts / balances
+    if (text.contains('balance') ||
+        text.contains('balances') ||
+        text.contains('account')) {
+      results.add({'name': 'get_account_balances', 'arguments': {}});
+    }
+
+    // Deduplicate by name, preserving first occurrence
+    final seen = <String>{};
+    final deduped = <Map<String, dynamic>>[];
+    for (final r in results) {
+      final n = r['name'] as String;
+      if (!seen.contains(n)) {
+        deduped.add(r);
+        seen.add(n);
+      }
+    }
+
+    return deduped;
+  }
+
   /// Normalize message content into a displayable markdown string
   String _normalizeMessageContent(dynamic input) {
     LoggerService.i(
@@ -874,11 +962,13 @@ Go to Settings → AI Assistant to update your configuration.''',
   /// Extract message from API response (handles different formats)
   Map<String, dynamic>? _extractMessage(Map<String, dynamic> data) {
     Map<String, dynamic>? message;
+    Map<String, dynamic>? choice;
+
     if (data['choices'] != null &&
         data['choices'] is List &&
         data['choices'].isNotEmpty) {
-      final choice = data['choices'][0];
-      message = choice['message'] as Map<String, dynamic>?;
+      choice = data['choices'][0] as Map<String, dynamic>?;
+      message = choice?['message'] as Map<String, dynamic>?;
     } else if (data['message'] != null) {
       // Some APIs return message directly
       final msg = data['message'];
@@ -906,6 +996,110 @@ Go to Settings → AI Assistant to update your configuration.''',
     if (message != null && message.containsKey('content')) {
       // Normalize content to string
       message['content'] = _normalizeMessageContent(message['content']);
+    }
+
+    // === New: detect tool/function calls returned in different formats ===
+    // 1) OpenAI-style `function_call` inside `message`
+    // 2) Provider-style `tool_calls` attached to choice
+    // 3) Plain-text hints like "Call get_recent_transactions"
+    final detectedCalls = <Map<String, dynamic>>[];
+
+    // Case A: OpenAI style function_call
+    try {
+      final func = (message != null && message['function_call'] != null)
+          ? message['function_call']
+          : (choice != null &&
+                choice['message'] != null &&
+                (choice['message'] as Map<String, dynamic>)['function_call'] !=
+                    null)
+          ? (choice['message'] as Map<String, dynamic>)['function_call']
+          : null;
+      if (func != null && func is Map && func['name'] != null) {
+        final argsRaw = func['arguments'] ?? func['args'] ?? '{}';
+        String argsStr = '{}';
+        if (argsRaw is String) argsStr = argsRaw;
+        if (argsRaw is Map) argsStr = jsonEncode(argsRaw);
+
+        detectedCalls.add({
+          'id': DateTime.now().millisecondsSinceEpoch.toString(),
+          'function': {'name': func['name'].toString(), 'arguments': argsStr},
+        });
+
+        // Clear content so we don't show function_call text to users
+        message?['content'] = '';
+      }
+    } catch (_) {}
+
+    // Case B: Provider-specific tool_calls attached to the choice
+    try {
+      final tc = (choice != null && choice['tool_calls'] != null)
+          ? choice['tool_calls']
+          : (choice != null && choice['tool_call'] != null)
+          ? choice['tool_call']
+          : null;
+      if (tc != null) {
+        if (tc is List) {
+          for (final call in tc) {
+            if (call is Map && call['function'] != null) {
+              detectedCalls.add({
+                'id':
+                    call['id']?.toString() ??
+                    DateTime.now().millisecondsSinceEpoch.toString(),
+                'function': call['function'],
+              });
+            }
+          }
+        } else if (tc is Map && tc['function'] != null) {
+          detectedCalls.add({
+            'id':
+                tc['id']?.toString() ??
+                DateTime.now().millisecondsSinceEpoch.toString(),
+            'function': tc['function'],
+          });
+        }
+
+        // Clear content to avoid showing raw tool call artifacts
+        message?['content'] = '';
+      }
+    } catch (_) {}
+
+    // Case C: Plain text like "Call get_recent_transactions" or "[Call get_recent_transactions]"
+    try {
+      if (message != null && message['content'] is String) {
+        final contentStr = message['content'] as String;
+        final regex = RegExp(
+          r"\bCall\s+([a-zA-Z0-9_]+)\b",
+          caseSensitive: false,
+        );
+        final matches = regex.allMatches(contentStr);
+        for (final m in matches) {
+          final name = m.group(1);
+          if (name != null && name.trim().isNotEmpty) {
+            detectedCalls.add({
+              'id': DateTime.now().millisecondsSinceEpoch.toString(),
+              'function': {'name': name.trim(), 'arguments': '{}'},
+            });
+          }
+        }
+
+        if (matches.isNotEmpty) {
+          // Remove the textual call annotations from content before displaying
+          var newContent = contentStr.replaceAll(regex, '');
+          // Also remove leftover brackets/parentheses and stray punctuation
+          newContent = newContent
+              .replaceAll(RegExp(r'[\[\]\(\)\:\,]'), '')
+              .trim();
+          message['content'] = newContent;
+          if ((message['content'] as String).isEmpty) {
+            message['content'] = '';
+          }
+        }
+      }
+    } catch (_) {}
+
+    if (detectedCalls.isNotEmpty) {
+      message ??= {'role': 'assistant'};
+      message['tool_calls'] = detectedCalls;
     }
 
     return message;

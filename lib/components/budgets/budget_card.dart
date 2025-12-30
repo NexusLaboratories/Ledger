@@ -27,7 +27,7 @@ class BudgetCard extends StatefulWidget {
 }
 
 class _BudgetCardState extends State<BudgetCard> {
-  String _currency = 'USD';
+  String _currency = 'INR';
 
   @override
   void initState() {

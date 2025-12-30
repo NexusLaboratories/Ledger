@@ -28,6 +28,13 @@ class _TutorialScreenState extends State<TutorialScreen>
       color: _tutorialGreen,
     ),
     TutorialCardData(
+      title: 'Free & Open Source',
+      description:
+          'Nexus Ledger is a FOSS project maintained by volunteers who donate their time and resources. If you find this app valuable, please consider supporting its development.',
+      icon: Icons.favorite_outline,
+      color: _tutorialGreen,
+    ),
+    TutorialCardData(
       title: 'Manage Your Accounts',
       description:
           'Create and manage multiple accounts - checking, savings, credit cards, and more. Keep track of all your finances in one place.',

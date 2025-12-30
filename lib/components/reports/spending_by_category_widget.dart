@@ -20,7 +20,7 @@ class _SpendingByCategoryWidgetState extends State<SpendingByCategoryWidget> {
   final CategoryService _categoryService = CategoryService();
   List<CategorySummary> _categorySummaries = [];
   bool _isLoading = true;
-  String _currency = 'USD';
+  String _currency = 'INR';
 
   @override
   void initState() {

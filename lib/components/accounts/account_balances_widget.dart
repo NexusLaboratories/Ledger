@@ -17,7 +17,7 @@ class _AccountBalancesWidgetState extends State<AccountBalancesWidget> {
   final AccountService _accountService = AccountService();
   List<Account?> _accounts = [];
   bool _isLoading = true;
-  String _currency = 'USD';
+  String _currency = 'INR';
 
   @override
   void initState() {

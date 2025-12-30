@@ -51,6 +51,8 @@ void main() async {
     // Initialize notifications
     final notificationService = getIt<NotificationService>();
     await notificationService.initialize();
+    // Schedule donation reminders if enabled
+    await notificationService.checkAndScheduleDonationReminder();
     // Initialize user date format preference notifier so UI subscribers read initial value
     await DateFormatService.init();
   } catch (e, stackTrace) {
@@ -81,32 +83,41 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String? _initialRoute;
+  late final ThemeService? _themeService;
 
   @override
   void initState() {
     super.initState();
+    try {
+      _themeService = getIt<ThemeService>();
+    } catch (e) {
+      _themeService = null;
+    }
     _determineInitialRoute();
   }
 
   Future<void> _determineInitialRoute() async {
     try {
       final seen = await UserPreferenceService.hasSeenTutorial();
-      setState(() {
-        _initialRoute = seen ? RouteNames.dashboard : RouteNames.tutorial;
-      });
+      if (mounted) {
+        setState(() {
+          _initialRoute = seen ? RouteNames.dashboard : RouteNames.tutorial;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _initialRoute = RouteNames.dashboard;
-      });
+      if (mounted) {
+        setState(() {
+          _initialRoute = RouteNames.dashboard;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    try {
-      final themeService = getIt<ThemeService>();
+    if (_themeService != null) {
       return ValueListenableBuilder<ThemeMode>(
-        valueListenable: themeService.notifier,
+        valueListenable: _themeService.notifier,
         builder: (context, mode, _) {
           return MaterialApp(
             routes: appRoutes,
@@ -119,10 +130,11 @@ class _MyAppState extends State<MyApp> {
             theme: lightTheme,
             darkTheme: darkTheme,
             themeMode: mode,
+            debugShowCheckedModeBanner: false,
           );
         },
       );
-    } catch (e) {
+    } else {
       // Fallback if ThemeService is not initialized
       return MaterialApp(
         routes: appRoutes,
