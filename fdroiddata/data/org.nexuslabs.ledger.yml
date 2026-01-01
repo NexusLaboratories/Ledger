@@ -20,9 +20,11 @@
   gradle:
     # Build from the Android subdirectory inside the repo
     subdir: ledger/android
-    build-command: ./gradlew assembleRelease
+    # Build an Android App Bundle (AAB) to avoid embedding extra signing blocks in the APK.
+    # FDroid will build from source and can handle bundling or APK generation.
+    build-command: ./gradlew bundleRelease
     outputs:
-      - app/build/outputs/apk/release/app-release-unsigned.apk
+      - app/build/outputs/bundle/release/app-release.aab
   android:
     applicationId: org.nexuslabs.ledger
   remarks: |
